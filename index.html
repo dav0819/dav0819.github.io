@@ -1,185 +1,291 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Iscrizione Corsi</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #f0f4ff, #d9e6ff);
-      padding: 20px;
-    }
-
-    .container {
-      background: white;
-      padding: 30px 25px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      max-width: 400px;
-      width: 100%;
-      text-align: center;
-      animation: fadeIn 0.6s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    h2 {
-      color: #007bff;
-      margin-bottom: 20px;
-      font-size: 22px;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-size: 16px;
-      color: #444;
-      text-align: left;
-    }
-
-    input, select, button {
-      width: 100%;
-      padding: 12px 15px;
-      margin-top: 5px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #007bff;
-      transition: all 0.3s ease;
-    }
-
-    input:focus, select:focus {
-      border-color: #0056b3;
-      box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-      outline: none;
-    }
-
-    button {
-      background: #28a745;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-top: 20px;
-      font-weight: bold;
-      transition: all 0.3s ease;
-    }
-
-    button:hover {
-      background: #218838;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    }
-
-    .hidden { display: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modulo Iscrizione Corsi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        :root { 
+            --primary:#3498db;--primary-light:#e7f2fa;--primary-dark:#2980b9;
+            --success:#2ecc71;--success-dark:#27ae60;
+            --danger:#e74c3c;
+            --warning:#f39c12;--warning-dark:#e67e22;
+            --gray-light:#f8f9fa;--gray:#95a5a6;--dark:#2c3e40;
+            --border-radius:12px;
+        }
+        body {font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;background:linear-gradient(135deg,#f0f4ff,#d9e6ff);display:flex;flex-direction:column;color:var(--dark);}
+        .container {flex:1;width:100%;max-width:500px;margin:0 auto;padding:1rem;display:flex;flex-direction:column;}
+        .header {background:var(--primary);color:white;padding:1rem;text-align:center;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+        .header h1 {font-size:1.4rem;font-weight:600;margin:0;}
+        .card {background:white;border-radius:var(--border-radius);box-shadow:0 4px 15px rgba(0,0,0,0.1);padding:1.5rem;margin-bottom:1rem;width:100%;}
+        h2 {color:var(--primary);margin-bottom:1.2rem;text-align:center;font-size:1.4rem;}
+        .form-group {margin-bottom:1.5rem;}
+        label {display:block;margin-bottom:0.5rem;font-weight:500;font-size:1rem;}
+        input {width:100%;padding:1rem;font-size:1rem;border-radius:var(--border-radius);border:1px solid #ddd;background-color:var(--gray-light);}
+        input:focus {border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(52,152,219,0.25);}
+        .btn {display:block;width:100%;padding:1rem;font-size:1.1rem;font-weight:600;border-radius:var(--border-radius);border:none;text-align:center;cursor:pointer;transition:all 0.2s ease;margin-top:1rem;}
+        .btn-primary {background:var(--primary);color:white;}
+        .btn-success {background:var(--success);color:white;}
+        .btn-warning {background:var(--warning);color:white;}
+        .error-message {color:var(--danger);font-size:0.9rem;margin-top:0.5rem;display:none;}
+        .loading {display:none;text-align:center;margin:1rem 0;color:var(--primary);}
+        .hidden {display:none;}
+        .center {text-align:center;}
+        .success-icon {font-size:4rem;margin-bottom:1.5rem;color:var(--success);}
+        .footer {text-align:center;padding:1rem;color:var(--gray);font-size:0.9rem;margin-top:auto;}
+        .corsi-container {display:grid;grid-template-columns:1fr;gap:0.8rem;margin-bottom:1rem;}
+        .corso-option {display:flex;align-items:center;padding:1rem;border:2px solid #ddd;border-radius:var(--border-radius);cursor:pointer;transition:all 0.2s ease;background:white;}
+        .corso-option:hover {border-color:var(--primary);background-color:var(--primary-light);}
+        .corso-option.selected {border-color:var(--primary);background-color:var(--primary-light);}
+        .corso-option.disabled {opacity:0.6;cursor:not-allowed;}
+        .status-message {text-align:center;padding:1rem;color:var(--gray);font-style:italic;}
+        
+        /* Nuovi stili aggiunti */
+        .categoria-label {
+            background-color: var(--primary-light);
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            color: var(--primary-dark);
+            text-align: center;
+        }
+        .corso-categoria {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.3rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+        .badge-biennio {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        .badge-triennio {
+            background-color: var(--success);
+            color: white;
+        }
+        .badge-universitari {
+            background-color: var(--warning);
+            color: white;
+        }
+        .badge-tutti {
+            background-color: var(--gray);
+            color: white;
+        }
+    </style>
 </head>
 <body>
+    <div class="header"><h1>Iscrizione Corsi</h1></div>
+    <div class="container">
 
-  <!-- Step 1 -->
-  <div id="step1" class="container">
-    <h2>Modulo iscrizione</h2>
-    <form id="formDati">
-      <label>Nome</label>
-      <input type="text" name="nome" required>
-      <label>Cognome</label>
-      <input type="text" name="cognome" required>
-      <label>Anno di nascita</label>
-      <input type="number" name="anno" min="1900" max="2025" placeholder="Es: 2005" required>
-      <button type="submit">Avanti</button>
-    </form>
-  </div>
+        <!-- STEP 1 -->
+        <div id="step1" class="card">
+            <h2>Dati personali</h2>
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" placeholder="Il tuo nome" required>
+                <div class="error-message" id="error-nome">Inserisci un nome valido</div>
+            </div>
+            <div class="form-group">
+                <label for="cognome">Cognome</label>
+                <input type="text" id="cognome" placeholder="Il tuo cognome" required>
+                <div class="error-message" id="error-cognome">Inserisci un cognome valido</div>
+            </div>
+            <div class="form-group">
+                <label for="anno">Anno di nascita</label>
+                <input type="number" id="anno" min="1900" max="2025" placeholder="Es: 2005" required>
+                <div class="error-message" id="error-anno">Inserisci un anno valido</div>
+            </div>
+            <button id="btnAvanti" class="btn btn-primary">Avanti</button>
+        </div>
 
-  <!-- Step 2 -->
-  <div id="step2" class="container hidden">
-    <h2>Scegli il corso</h2>
-    <form id="formCorso">
-      <label>Corso</label>
-      <select name="corso" id="corsoSelect" required></select>
-      <button type="submit">Iscriviti</button>
-    </form>
-  </div>
+        <!-- STEP 2 -->
+        <div id="step2" class="card hidden">
+            <h2>Seleziona un corso</h2>
+            <div id="categoriaInfo" class="categoria-label"></div>
+            <div class="corsi-container" id="corsiContainer"></div>
+            <div id="corsiStatus" class="status-message">Caricamento corsi in corso...</div>
+            <input type="hidden" id="corsoSelezionato">
+            <div class="error-message" id="error-corso">Seleziona un corso</div>
+            <div class="loading" id="loadingIscrizione">
+                <p>Elaborazione in corso...</p>
+            </div>
+            <button id="btnIscriviti" class="btn btn-primary">Iscriviti</button>
+        </div>
 
-  <!-- Step 3 -->
-  <div id="step3" class="container hidden">
-    <h2>✅ Modulo concluso</h2>
-    <p>Premi il tasto per chiudere il modulo</p>
-    <button onclick="window.close()">Chiudi</button>
-  </div>
+        <!-- STEP 3 -->
+        <div id="conferma" class="card center hidden">
+            <div class="success-icon">✅</div>
+            <h2>Iscrizione Completata!</h2>
+            <p>Grazie <strong id="nomeConferma"></strong> per esserti iscritto al corso <strong id="corso-conferma"></strong>.</p>
+            <button class="btn btn-success" id="btnChiudi">Chiudi</button>
+        </div>
 
-  <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzbgpsuWvN9cXaw5-_i7i6MNCeZrATTpG7sa9d1OLDVjE1voYrn2fBNtSoAQptjwp-_yw/exec";
+        <div class="footer"><p>© 2023 - Tutti i diritti riservati</p></div>
+    </div>
 
-    const formDati = document.getElementById("formDati");
-    const formCorso = document.getElementById("formCorso");
-    const step1 = document.getElementById("step1");
-    const step2 = document.getElementById("step2");
-    const step3 = document.getElementById("step3");
-    const corsoSelect = document.getElementById("corsoSelect");
+    <script>
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzbgpsuWvN9cXaw5-_i7i6MNCeZrATTpG7sa9d1OLDVjE1voYrn2fBNtSoAQptjwp-_yw/exec";
 
-    let datiPersonali = {};
+        // elementi
+        const step1 = document.getElementById("step1");
+        const step2 = document.getElementById("step2");
+        const confermaDiv = document.getElementById("conferma");
+        const btnAvanti = document.getElementById("btnAvanti");
+        const btnIscriviti = document.getElementById("btnIscriviti");
+        const btnChiudi = document.getElementById("btnChiudi");
+        const corsiContainer = document.getElementById("corsiContainer");
+        const corsiStatus = document.getElementById("corsiStatus");
+        const corsoSelezionatoInput = document.getElementById("corsoSelezionato");
+        const corsoConferma = document.getElementById("corso-conferma");
+        const nomeConferma = document.getElementById("nomeConferma");
+        const loadingIscrizione = document.getElementById("loadingIscrizione");
+        const categoriaInfo = document.getElementById("categoriaInfo");
 
-    // STEP 1 → vai ai corsi
-    formDati.addEventListener("submit", e => {
-      e.preventDefault();
-      const formData = new FormData(formDati);
-      datiPersonali = Object.fromEntries(formData.entries());
-      step1.classList.add("hidden");
-      step2.classList.remove("hidden");
+        let nome = "", cognome = "", anno = "", categoria = "";
 
-      // carico corsi dal foglio
-      fetch(scriptURL)
-        .then(res => res.json())
-        .then(corsi => {
-          corsoSelect.innerHTML = "";
-          corsi.forEach(c => {
-            let nome = c[0];
-            let posti = Number(c[1]);
-            if (posti > 0) {
-              let opt = document.createElement("option");
-              opt.value = nome;
-              opt.textContent = nome + " (" + posti + " posti)";
-              corsoSelect.appendChild(opt);
+        // STEP 1 -> STEP 2
+        btnAvanti.addEventListener("click", () => {
+            nome = document.getElementById("nome").value.trim();
+            cognome = document.getElementById("cognome").value.trim();
+            anno = document.getElementById("anno").value.trim();
+            const year = parseInt(anno);
+            
+            if (!nome || !cognome || isNaN(year) || year < 1900 || year > new Date().getFullYear()) {
+                alert("Compila correttamente tutti i campi");
+                return;
             }
-          });
-        })
-        .catch(() => alert("Errore nel caricamento dei corsi"));
-    });
-
-    // STEP 2 → iscrizione
-    formCorso.addEventListener("submit", e => {
-      e.preventDefault();
-      const corso = corsoSelect.value;
-      const dati = new FormData();
-      dati.append("nome", datiPersonali.nome);
-      dati.append("cognome", datiPersonali.cognome);
-      dati.append("anno", datiPersonali.anno);
-      dati.append("corso", corso);
-
-      fetch(scriptURL, { method: "POST", body: dati })
-        .then(res => res.text())
-        .then(resp => {
-          if (resp === "OK") {
-            step2.classList.add("hidden");
-            step3.classList.remove("hidden");
-          } else if (resp === "FULL") {
-            alert("❌ Posti esauriti per questo corso!");
-            window.location.reload();
-          } else if (resp === "DUPLICATO") {
-            alert("⚠️ Sei già iscritto con questi dati!");
-            window.location.reload();
-          } else {
-            alert("❌ Errore durante l'iscrizione!");
-          }
+            
+            // Determina la categoria in base all'anno di nascita
+            if (year >= 2010) {
+                categoria = "biennio"; // 2010, 2011, ...
+            } else if (year >= 2007) {
+                categoria = "triennio"; // 2007, 2008, 2009
+            } else {
+                categoria = "universitari"; // 2006 e precedenti
+            }
+            
+            step1.classList.add("hidden");
+            step2.classList.remove("hidden");
+            categoriaInfo.textContent = `Sei del ${categoria.toUpperCase()}. Ecco i corsi disponibili:`;
+            caricaCorsi();
         });
-    });
-  </script>
+
+        // CARICAMENTO CORSI
+        function caricaCorsi() {
+            corsiContainer.innerHTML = "";
+            corsiStatus.style.display = "block";
+            
+            fetch(scriptURL)
+                .then(r => r.json())
+                .then(corsi => {
+                    corsiStatus.style.display = "none";
+                    
+                    // Filtra i corsi per categoria
+                    const corsiFiltrati = corsi.filter(c => {
+                        if (c && c.length >= 3) {
+                            const corsoCategoria = c[2] ? c[2].toLowerCase().trim() : "";
+                            return corsoCategoria === categoria || corsoCategoria === "tutti";
+                        }
+                        return false;
+                    });
+                    
+                    if (corsiFiltrati.length === 0) {
+                        corsiContainer.innerHTML = `<div class="status-message">Nessun corso disponibile per il ${categoria} al momento.</div>`;
+                        return;
+                    }
+                    
+                    corsiFiltrati.forEach(c => {
+                        if (c && c.length >= 2) {
+                            let nomeCorso = c[0];
+                            let posti = Number(c[1]);
+                            let corsoCategoria = c[2] || "tutti";
+                            
+                            const div = document.createElement("div");
+                            div.className = "corso-option";
+                            
+                            // Aggiungi badge per la categoria del corso
+                            let badgeClass = "badge-tutti";
+                            if (corsoCategoria === "biennio") badgeClass = "badge-biennio";
+                            else if (corsoCategoria === "triennio") badgeClass = "badge-triennio";
+                            else if (corsoCategoria === "universitari") badgeClass = "badge-universitari";
+                            
+                            div.innerHTML = `
+                                <div style="flex-grow:1">
+                                    <div class="corso-titolo">${nomeCorso} <span class="badge ${badgeClass}">${corsoCategoria.toUpperCase()}</span></div>
+                                    <div class="corso-posti">${posti > 0 ? posti+" posti disponibili" : "Posti esauriti"}</div>
+                                </div>
+                            `;
+                            
+                            if (posti > 0) {
+                                div.addEventListener("click", () => {
+                                    document.querySelectorAll(".corso-option").forEach(o => o.classList.remove("selected"));
+                                    div.classList.add("selected");
+                                    corsoSelezionatoInput.value = nomeCorso;
+                                });
+                            } else {
+                                div.classList.add("disabled");
+                            }
+                            
+                            corsiContainer.appendChild(div);
+                        }
+                    });
+                })
+                .catch(() => {
+                    corsiStatus.textContent = "Errore nel caricamento corsi";
+                });
+        }
+
+        // ISCRIZIONE
+        btnIscriviti.addEventListener("click", () => {
+            if (!corsoSelezionatoInput.value) {
+                alert("Seleziona un corso!");
+                return;
+            }
+            
+            loadingIscrizione.style.display = "block";
+            const dati = new URLSearchParams();
+            dati.append("nome", nome);
+            dati.append("cognome", cognome);
+            dati.append("anno", anno);
+            dati.append("corso", corsoSelezionatoInput.value);
+            dati.append("categoria", categoria); // Aggiungi la categoria ai dati inviati
+
+            fetch(scriptURL, { method:"POST", body:dati })
+                .then(r => r.text())
+                .then(resp => {
+                    loadingIscrizione.style.display = "none";
+                    if (resp === "OK") {
+                        step2.classList.add("hidden");
+                        confermaDiv.classList.remove("hidden");
+                        nomeConferma.textContent = nome;
+                        corsoConferma.textContent = corsoSelezionatoInput.value;
+                    } else if (resp === "FULL") {
+                        alert("Posti esauriti per questo corso!");
+                        caricaCorsi();
+                    } else if (resp === "DUPLICATO") {
+                        alert("Sei già iscritto a questo corso!");
+                    } else {
+                        alert("Errore durante l'iscrizione!");
+                    }
+                })
+                .catch(() => {
+                    loadingIscrizione.style.display = "none";
+                    alert("Errore di connessione");
+                });
+        });
+
+        btnChiudi.addEventListener("click", () => window.close());
+    </script>
 </body>
 </html>
