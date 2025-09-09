@@ -23,8 +23,8 @@
         h2 {color:var(--primary);margin-bottom:1.2rem;text-align:center;font-size:1.4rem;}
         .form-group {margin-bottom:1.5rem;}
         label {display:block;margin-bottom:0.5rem;font-weight:500;font-size:1rem;}
-        input {width:100%;padding:1rem;font-size:1rem;border-radius:var(--border-radius);border:1px solid #ddd;background-color:var(--gray-light);}
-        input:focus {border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(52,152,219,0.25);}
+        input, select {width:100%;padding:1rem;font-size:1rem;border-radius:var(--border-radius);border:1px solid #ddd;background-color:var(--gray-light);}
+        input:focus, select:focus {border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(52,152,219,0.25);}
         .btn {display:block;width:100%;padding:1rem;font-size:1.1rem;font-weight:600;border-radius:var(--border-radius);border:none;text-align:center;cursor:pointer;transition:all 0.2s ease;margin-top:1rem;}
         .btn-primary {background:var(--primary);color:white;}
         .btn-success {background:var(--success);color:white;}
@@ -42,7 +42,6 @@
         .corso-option.disabled {opacity:0.6;cursor:not-allowed;}
         .status-message {text-align:center;padding:1rem;color:var(--gray);font-style:italic;}
         
-        /* Nuovi stili aggiunti */
         .categoria-label {
             background-color: var(--primary-light);
             padding: 0.8rem 1rem;
@@ -82,11 +81,37 @@
             background-color: var(--gray);
             color: white;
         }
+        
+        .error-box {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .info-box {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="header"><h1>Iscrizione Corsi</h1></div>
     <div class="container">
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i> Compila il modulo per iscriverti a uno dei corsi disponibili
+        </div>
+
+        <div class="error-box" id="errorGeneral">
+            <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+        </div>
 
         <!-- STEP 1 -->
         <div id="step1" class="card">
@@ -104,7 +129,7 @@
             <div class="form-group">
                 <label for="anno">Anno di nascita</label>
                 <input type="number" id="anno" min="1900" max="2025" placeholder="Es: 2005" required>
-                <div class="error-message" id="error-anno">Inserisci un anno valido</div>
+                <div class="error-message" id="error-anno">Inserisci un anno valido (1900-2025)</div>
             </div>
             <button id="btnAvanti" class="btn btn-primary">Avanti</button>
         </div>
@@ -118,9 +143,11 @@
             <input type="hidden" id="corsoSelezionato">
             <div class="error-message" id="error-corso">Seleziona un corso</div>
             <div class="loading" id="loadingIscrizione">
+                <i class="fas fa-spinner fa-spin"></i>
                 <p>Elaborazione in corso...</p>
             </div>
             <button id="btnIscriviti" class="btn btn-primary">Iscriviti</button>
+            <button id="btnIndietro" class="btn" style="background: var(--gray-light); color: var(--dark); margin-top: 0.5rem;">Indietro</button>
         </div>
 
         <!-- STEP 3 -->
@@ -128,14 +155,15 @@
             <div class="success-icon">✅</div>
             <h2>Iscrizione Completata!</h2>
             <p>Grazie <strong id="nomeConferma"></strong> per esserti iscritto al corso <strong id="corso-conferma"></strong>.</p>
-            <button class="btn btn-success" id="btnChiudi">Chiudi</button>
+            <button class="btn btn-success" id="btnNuovaIscrizione">Nuova Iscrizione</button>
         </div>
 
         <div class="footer"><p>© 2023 - Tutti i diritti riservati</p></div>
     </div>
 
     <script>
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzbgpsuWvN9cXaw5-_i7i6MNCeZrATTpG7sa9d1OLDVjE1voYrn2fBNtSoAQptjwp-_yw/exec";
+        // Sostituisci con il tuo URL di Google Apps Script
+        const scriptURL = "https://script.google.com/macros/s/AKfycbziZIDZtpVXqWqs-74i1lvRcsQtdaU5HsyXTjb56NfH3PjrcYbj3Jch9-cn-9U2U7X95A/exec";
 
         // elementi
         const step1 = document.getElementById("step1");
@@ -143,7 +171,8 @@
         const confermaDiv = document.getElementById("conferma");
         const btnAvanti = document.getElementById("btnAvanti");
         const btnIscriviti = document.getElementById("btnIscriviti");
-        const btnChiudi = document.getElementById("btnChiudi");
+        const btnIndietro = document.getElementById("btnIndietro");
+        const btnNuovaIscrizione = document.getElementById("btnNuovaIscrizione");
         const corsiContainer = document.getElementById("corsiContainer");
         const corsiStatus = document.getElementById("corsiStatus");
         const corsoSelezionatoInput = document.getElementById("corsoSelezionato");
@@ -151,8 +180,19 @@
         const nomeConferma = document.getElementById("nomeConferma");
         const loadingIscrizione = document.getElementById("loadingIscrizione");
         const categoriaInfo = document.getElementById("categoriaInfo");
+        const errorGeneral = document.getElementById("errorGeneral");
+        const errorText = document.getElementById("errorText");
 
         let nome = "", cognome = "", anno = "", categoria = "";
+
+        // Funzione per mostrare errori
+        function showError(message) {
+            errorText.textContent = message;
+            errorGeneral.style.display = 'block';
+            setTimeout(() => {
+                errorGeneral.style.display = 'none';
+            }, 5000);
+        }
 
         // STEP 1 -> STEP 2
         btnAvanti.addEventListener("click", () => {
@@ -161,24 +201,48 @@
             anno = document.getElementById("anno").value.trim();
             const year = parseInt(anno);
             
-            if (!nome || !cognome || isNaN(year) || year < 1900 || year > new Date().getFullYear()) {
-                alert("Compila correttamente tutti i campi");
+            // Validazione
+            if (!nome) {
+                showError("Inserisci il tuo nome");
+                return;
+            }
+            
+            if (!cognome) {
+                showError("Inserisci il tuo cognome");
+                return;
+            }
+            
+            if (isNaN(year) || year < 1900 || year > new Date().getFullYear()) {
+                showError("Inserisci un anno di nascita valido");
                 return;
             }
             
             // Determina la categoria in base all'anno di nascita
-            if (year >= 2010) {
-                categoria = "biennio"; // 2010, 2011, ...
-            } else if (year >= 2007) {
-                categoria = "triennio"; // 2007, 2008, 2009
+            const currentYear = new Date().getFullYear();
+            const age = currentYear - year;
+            
+            if (age < 14) {
+                showError("Devi avere almeno 14 anni per iscriverti");
+                return;
+            } else if (age <= 16) {
+                categoria = "biennio";
+            } else if (age <= 19) {
+                categoria = "triennio";
             } else {
-                categoria = "universitari"; // 2006 e precedenti
+                categoria = "universitari";
             }
             
             step1.classList.add("hidden");
             step2.classList.remove("hidden");
-            categoriaInfo.textContent = `Sei del ${categoria.toUpperCase()}. Ecco i corsi disponibili:`;
+            categoriaInfo.textContent = `Categoria: ${categoria.toUpperCase()} (${age} anni)`;
             caricaCorsi();
+        });
+
+        // Torna indietro
+        btnIndietro.addEventListener("click", () => {
+            step2.classList.add("hidden");
+            step1.classList.remove("hidden");
+            errorGeneral.style.display = 'none';
         });
 
         // CARICAMENTO CORSI
@@ -187,9 +251,19 @@
             corsiStatus.style.display = "block";
             
             fetch(scriptURL)
-                .then(r => r.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Errore nel caricamento dei corsi');
+                    }
+                    return response.json();
+                })
                 .then(corsi => {
                     corsiStatus.style.display = "none";
+                    
+                    if (!corsi || corsi.length === 0) {
+                        corsiContainer.innerHTML = `<div class="status-message">Nessun corso disponibile al momento.</div>`;
+                        return;
+                    }
                     
                     // Filtra i corsi per categoria
                     const corsiFiltrati = corsi.filter(c => {
@@ -201,7 +275,7 @@
                     });
                     
                     if (corsiFiltrati.length === 0) {
-                        corsiContainer.innerHTML = `<div class="status-message">Nessun corso disponibile per il ${categoria} al momento.</div>`;
+                        corsiContainer.innerHTML = `<div class="status-message">Nessun corso disponibile per la categoria ${categoria} al momento.</div>`;
                         return;
                     }
                     
@@ -213,6 +287,9 @@
                             
                             const div = document.createElement("div");
                             div.className = "corso-option";
+                            if (posti <= 0) {
+                                div.classList.add("disabled");
+                            }
                             
                             // Aggiungi badge per la categoria del corso
                             let badgeClass = "badge-tutti";
@@ -223,7 +300,7 @@
                             div.innerHTML = `
                                 <div style="flex-grow:1">
                                     <div class="corso-titolo">${nomeCorso} <span class="badge ${badgeClass}">${corsoCategoria.toUpperCase()}</span></div>
-                                    <div class="corso-posti">${posti > 0 ? posti+" posti disponibili" : "Posti esauriti"}</div>
+                                    <div class="corso-posti">${posti > 0 ? posti + " posti disponibili" : "Posti esauriti"}</div>
                                 </div>
                             `;
                             
@@ -233,59 +310,77 @@
                                     div.classList.add("selected");
                                     corsoSelezionatoInput.value = nomeCorso;
                                 });
-                            } else {
-                                div.classList.add("disabled");
                             }
                             
                             corsiContainer.appendChild(div);
                         }
                     });
                 })
-                .catch(() => {
-                    corsiStatus.textContent = "Errore nel caricamento corsi";
+                .catch(error => {
+                    console.error('Errore:', error);
+                    corsiStatus.textContent = "Errore nel caricamento dei corsi. Riprova più tardi.";
                 });
         }
 
         // ISCRIZIONE
         btnIscriviti.addEventListener("click", () => {
             if (!corsoSelezionatoInput.value) {
-                alert("Seleziona un corso!");
+                showError("Seleziona un corso!");
                 return;
             }
             
             loadingIscrizione.style.display = "block";
+            btnIscriviti.disabled = true;
+            
             const dati = new URLSearchParams();
             dati.append("nome", nome);
             dati.append("cognome", cognome);
             dati.append("anno", anno);
             dati.append("corso", corsoSelezionatoInput.value);
-            dati.append("categoria", categoria); // Aggiungi la categoria ai dati inviati
+            dati.append("categoria", categoria);
 
-            fetch(scriptURL, { method:"POST", body:dati })
-                .then(r => r.text())
+            fetch(scriptURL, { 
+                method: "POST", 
+                body: dati 
+            })
+                .then(response => response.text())
                 .then(resp => {
                     loadingIscrizione.style.display = "none";
+                    btnIscriviti.disabled = false;
+                    
                     if (resp === "OK") {
                         step2.classList.add("hidden");
                         confermaDiv.classList.remove("hidden");
                         nomeConferma.textContent = nome;
                         corsoConferma.textContent = corsoSelezionatoInput.value;
                     } else if (resp === "FULL") {
-                        alert("Posti esauriti per questo corso!");
+                        showError("Posti esauriti per questo corso! Scegli un altro corso.");
                         caricaCorsi();
                     } else if (resp === "DUPLICATO") {
-                        alert("Sei già iscritto a questo corso!");
+                        showError("Sei già iscritto a un corso! Non puoi iscriverti più volte.");
                     } else {
-                        alert("Errore durante l'iscrizione!");
+                        showError("Errore durante l'iscrizione! Riprova più tardi.");
                     }
                 })
-                .catch(() => {
+                .catch(error => {
+                    console.error('Errore:', error);
                     loadingIscrizione.style.display = "none";
-                    alert("Errore di connessione");
+                    btnIscriviti.disabled = false;
+                    showError("Errore di connessione. Riprova più tardi.");
                 });
         });
 
-        btnChiudi.addEventListener("click", () => window.close());
+        // Nuova iscrizione
+        btnNuovaIscrizione.addEventListener("click", () => {
+            // Resetta il form
+            document.getElementById("nome").value = "";
+            document.getElementById("cognome").value = "";
+            document.getElementById("anno").value = "";
+            corsoSelezionatoInput.value = "";
+            
+            confermaDiv.classList.add("hidden");
+            step1.classList.remove("hidden");
+        });
     </script>
 </body>
 </html>
