@@ -29,6 +29,7 @@
         .btn-primary {background:var(--primary);color:white;}
         .btn-success {background:var(--success);color:white;}
         .btn-warning {background:var(--warning);color:white;}
+        .btn-danger {background:var(--danger);color:white;}
         .error-message {color:var(--danger);font-size:0.9rem;margin-top:0.5rem;display:none;}
         .loading {display:none;text-align:center;margin:1rem 0;color:var(--primary);}
         .hidden {display:none;}
@@ -100,6 +101,13 @@
             margin-bottom: 1rem;
             text-align: center;
         }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -155,7 +163,9 @@
             <div class="success-icon">✅</div>
             <h2>Iscrizione Completata!</h2>
             <p>Grazie <strong id="nomeConferma"></strong> per esserti iscritto al corso <strong id="corso-conferma"></strong>.</p>
-            <button class="btn btn-success" id="btnNuovaIscrizione">Nuova Iscrizione</button>
+            <div class="button-group">
+                <button class="btn btn-success" id="btnChiudiScheda">Chiudi Scheda</button>
+            </div>
         </div>
 
         <div class="footer"><p>© 2023 - Tutti i diritti riservati</p></div>
@@ -173,6 +183,7 @@
         const btnIscriviti = document.getElementById("btnIscriviti");
         const btnIndietro = document.getElementById("btnIndietro");
         const btnNuovaIscrizione = document.getElementById("btnNuovaIscrizione");
+        const btnChiudiScheda = document.getElementById("btnChiudiScheda");
         const corsiContainer = document.getElementById("corsiContainer");
         const corsiStatus = document.getElementById("corsiStatus");
         const corsoSelezionatoInput = document.getElementById("corsoSelezionato");
@@ -212,21 +223,22 @@
                 return;
             }
             
-            if (isNaN(year) || year < 1900 || year > new Date().getFullYear()) {
+            const currentYear = new Date().getFullYear();
+            if (isNaN(year) || year < 1900 || year > currentYear) {
                 showError("Inserisci un anno di nascita valido");
                 return;
             }
             
-            // Determina la categoria in base all'anno di nascita
-            const currentYear = new Date().getFullYear();
+            // Calcola l'età
             const age = currentYear - year;
             
-            if (age < 14) {
-                showError("Devi avere almeno 14 anni per iscriverti");
-                return;
-            } else if (age <= 16) {
+            // CORREZIONE: Determinazione corretta della categoria in base all'anno di nascita
+            // Biennio: nati dal 2011 al 2010
+            // Triennio: nati dal 2009 al 2007
+            // Universitari: nati nel 2006 e precedenti
+            if (year >= 2011 || year === 2010) {
                 categoria = "biennio";
-            } else if (age <= 19) {
+            } else if (year >= 2007 && year <= 2009) {
                 categoria = "triennio";
             } else {
                 categoria = "universitari";
@@ -370,16 +382,9 @@
                 });
         });
 
-        // Nuova iscrizione
-        btnNuovaIscrizione.addEventListener("click", () => {
-            // Resetta il form
-            document.getElementById("nome").value = "";
-            document.getElementById("cognome").value = "";
-            document.getElementById("anno").value = "";
-            corsoSelezionatoInput.value = "";
-            
-            confermaDiv.classList.add("hidden");
-            step1.classList.remove("hidden");
+        // Chiudi scheda
+        btnChiudiScheda.addEventListener("click", () => {
+            window.close();
         });
     </script>
 </body>
