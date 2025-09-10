@@ -53,11 +53,6 @@
             color: var(--primary-dark);
             text-align: center;
         }
-        .corso-categoria {
-            font-size: 0.8rem;
-            color: var(--gray);
-            margin-top: 0.3rem;
-        }
         .badge {
             display: inline-block;
             padding: 0.3rem 0.6rem;
@@ -102,11 +97,34 @@
             text-align: center;
         }
         
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+        .date-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.8rem;
+        }
+        
+        .debug-panel {
+            background-color: #f5f5f5;
+            border-radius: var(--border-radius);
+            padding: 1rem;
             margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            display: none;
+        }
+        
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: help;
         }
     </style>
 </head>
@@ -135,9 +153,36 @@
                 <div class="error-message" id="error-cognome">Inserisci un cognome valido</div>
             </div>
             <div class="form-group">
-                <label for="anno">Anno di nascita</label>
-                <input type="number" id="anno" min="1900" max="2025" placeholder="Es: 2005" required>
-                <div class="error-message" id="error-anno">Inserisci un anno valido (1900-2025)</div>
+                <label for="data-nascita">Data di nascita <span class="info-icon" title="La categoria verrà determinata automaticamente in base all'anno di nascita">?</span></label>
+                <div class="date-container">
+                    <div>
+                        <label for="giorno">Giorno</label>
+                        <input type="number" id="giorno" min="1" max="31" placeholder="GG" required>
+                    </div>
+                    <div>
+                        <label for="mese">Mese</label>
+                        <select id="mese" required>
+                            <option value="">MM</option>
+                            <option value="1">Gennaio</option>
+                            <option value="2">Febbraio</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Aprile</option>
+                            <option value="5">Maggio</option>
+                            <option value="6">Giugno</option>
+                            <option value="7">Luglio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Settembre</option>
+                            <option value="10">Ottobre</option>
+                            <option value="11">Novembre</option>
+                            <option value="12">Dicembre</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="anno">Anno</label>
+                        <input type="number" id="anno" min="1900" max="2025" placeholder="AAAA" required>
+                    </div>
+                </div>
+                <div class="error-message" id="error-data">Inserisci una data valida</div>
             </div>
             <button id="btnAvanti" class="btn btn-primary">Avanti</button>
         </div>
@@ -158,14 +203,21 @@
             <button id="btnIndietro" class="btn" style="background: var(--gray-light); color: var(--dark); margin-top: 0.5rem;">Indietro</button>
         </div>
 
-        <!-- STEP 3 -->
+        <!-- STEP 3 - Conferma iscrizione normale -->
         <div id="conferma" class="card center hidden">
             <div class="success-icon">✅</div>
             <h2>Iscrizione Completata!</h2>
             <p>Grazie <strong id="nomeConferma"></strong> per esserti iscritto al corso <strong id="corso-conferma"></strong>.</p>
-            <div class="button-group">
-                <button class="btn btn-success" id="btnChiudiScheda">Chiudi Scheda</button>
-            </div>
+            <button class="btn btn-success" id="btnChiudiScheda">Chiudi Scheda</button>
+        </div>
+        
+        <!-- STEP 3 - Conferma per universitari -->
+        <div id="conferma-universitari" class="card center hidden">
+            <div class="success-icon">📩</div>
+            <h2>Richiesta Registrata!</h2>
+            <p>Grazie <strong id="nomeConfermaUni"></strong> per la tua richiesta di iscrizione.</p>
+            <p>Poiché sei universitario, riceverai presto notizie direttamente da Nino riguardo al corso che potrai seguire.</p>
+            <button class="btn btn-success" id="btnChiudiSchedaUni">Chiudi Scheda</button>
         </div>
 
         <div class="footer"><p>© 2023 - Tutti i diritti riservati</p></div>
@@ -173,28 +225,31 @@
 
     <script>
         // Sostituisci con il tuo URL di Google Apps Script
-        const scriptURL = "https://script.google.com/macros/s/AKfycbziZIDZtpVXqWqs-74i1lvRcsQtdaU5HsyXTjb56NfH3PjrcYbj3Jch9-cn-9U2U7X95A/exec";
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxD3cVusTuGttNPWHU30qdWgiRj1Ct6GMM9pm7uxIOSwib_lQNRdyTxnoCu9hhPn3EBwA/exec";
 
         // elementi
         const step1 = document.getElementById("step1");
         const step2 = document.getElementById("step2");
         const confermaDiv = document.getElementById("conferma");
+        const confermaUniDiv = document.getElementById("conferma-universitari");
         const btnAvanti = document.getElementById("btnAvanti");
         const btnIscriviti = document.getElementById("btnIscriviti");
         const btnIndietro = document.getElementById("btnIndietro");
-        const btnNuovaIscrizione = document.getElementById("btnNuovaIscrizione");
         const btnChiudiScheda = document.getElementById("btnChiudiScheda");
+        const btnChiudiSchedaUni = document.getElementById("btnChiudiSchedaUni");
         const corsiContainer = document.getElementById("corsiContainer");
         const corsiStatus = document.getElementById("corsiStatus");
         const corsoSelezionatoInput = document.getElementById("corsoSelezionato");
         const corsoConferma = document.getElementById("corso-conferma");
         const nomeConferma = document.getElementById("nomeConferma");
+        const nomeConfermaUni = document.getElementById("nomeConfermaUni");
         const loadingIscrizione = document.getElementById("loadingIscrizione");
         const categoriaInfo = document.getElementById("categoriaInfo");
         const errorGeneral = document.getElementById("errorGeneral");
         const errorText = document.getElementById("errorText");
 
-        let nome = "", cognome = "", anno = "", categoria = "";
+        let nome = "", cognome = "", giorno = "", mese = "", anno = "", categoria = "";
+        let isUniversitario = false;
 
         // Funzione per mostrare errori
         function showError(message) {
@@ -205,12 +260,52 @@
             }, 5000);
         }
 
+        // Funzione per validare la data
+        function isValidDate(g, m, a) {
+            const day = parseInt(g);
+            const month = parseInt(m);
+            const year = parseInt(a);
+            
+            if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+            
+            // Controllo base
+            if (year < 1900 || year > new Date().getFullYear()) return false;
+            if (month < 1 || month > 12) return false;
+            
+            // Controllo giorni nel mese
+            const daysInMonth = new Date(year, month, 0).getDate();
+            if (day < 1 || day > daysInMonth) return false;
+            
+            return true;
+        }
+
+        // Funzione per validare il form
+        function validateForm() {
+            const nome = document.getElementById("nome").value.trim();
+            const cognome = document.getElementById("cognome").value.trim();
+            
+            if (nome.length < 2) {
+                showError("Il nome deve avere almeno 2 caratteri");
+                return false;
+            }
+            
+            if (cognome.length < 2) {
+                showError("Il cognome deve avere almeno 2 caratteri");
+                return false;
+            }
+            
+            return true;
+        }
+
         // STEP 1 -> STEP 2
         btnAvanti.addEventListener("click", () => {
+            if (!validateForm()) return;
+            
             nome = document.getElementById("nome").value.trim();
             cognome = document.getElementById("cognome").value.trim();
+            giorno = document.getElementById("giorno").value.trim();
+            mese = document.getElementById("mese").value;
             anno = document.getElementById("anno").value.trim();
-            const year = parseInt(anno);
             
             // Validazione
             if (!nome) {
@@ -223,27 +318,42 @@
                 return;
             }
             
-            const currentYear = new Date().getFullYear();
-            if (isNaN(year) || year < 1900 || year > currentYear) {
-                showError("Inserisci un anno di nascita valido");
+            if (!isValidDate(giorno, mese, anno)) {
+                showError("Inserisci una data di nascita valida");
                 return;
             }
             
-            // Calcola l'età
-            const age = currentYear - year;
+            // Calcola l'età e determina la categoria
+            const birthYear = parseInt(anno);
+            const currentYear = new Date().getFullYear();
+            const age = currentYear - birthYear;
             
-            // CORREZIONE: Determinazione corretta della categoria in base all'anno di nascita
-            // Biennio: nati dal 2011 al 2010
-            // Triennio: nati dal 2009 al 2007
-            // Universitari: nati nel 2006 e precedenti
-            if (year >= 2011 || year === 2010) {
+            // Determinazione automatica della categoria in base all'anno di nascita
+            // Biennio: nati dal 2011 in poi
+            // Triennio: nati dal 2008 al 2010
+            // Universitari: nati nel 2007 e precedenti
+            if (birthYear >= 2011) {
                 categoria = "biennio";
-            } else if (year >= 2007 && year <= 2009) {
+            } else if (birthYear >= 2008 && birthYear <= 2010) {
                 categoria = "triennio";
             } else {
                 categoria = "universitari";
+                isUniversitario = true;
             }
             
+            // Verifica se è universitario
+            if (isUniversitario) {
+                // Salta la selezione del corso e mostra direttamente la conferma per universitari
+                step1.classList.add("hidden");
+                confermaUniDiv.classList.remove("hidden");
+                nomeConfermaUni.textContent = nome;
+                
+                // Invia i dati per gli universitari
+                inviaDatiUniversitari();
+                return;
+            }
+            
+            // Se non è universitario, procedi normalmente
             step1.classList.add("hidden");
             step2.classList.remove("hidden");
             categoriaInfo.textContent = `Categoria: ${categoria.toUpperCase()} (${age} anni)`;
@@ -256,6 +366,31 @@
             step1.classList.remove("hidden");
             errorGeneral.style.display = 'none';
         });
+
+        // Funzione per inviare i dati degli universitari
+        function inviaDatiUniversitari() {
+            const dati = new URLSearchParams();
+            dati.append("nome", nome);
+            dati.append("cognome", cognome);
+            dati.append("giorno_nascita", giorno);
+            dati.append("mese_nascita", mese);
+            dati.append("anno_nascita", anno);
+            dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
+            dati.append("categoria", "universitari");
+            dati.append("corso", "Da definire con Nino");
+
+            fetch(scriptURL, { 
+                method: "POST", 
+                body: dati 
+            })
+                .then(response => response.text())
+                .then(resp => {
+                    console.log("Risposta server universitari:", resp);
+                })
+                .catch(error => {
+                    console.error('Errore invio dati universitari:', error);
+                });
+        }
 
         // CARICAMENTO CORSI
         function caricaCorsi() {
@@ -347,7 +482,10 @@
             const dati = new URLSearchParams();
             dati.append("nome", nome);
             dati.append("cognome", cognome);
-            dati.append("anno", anno);
+            dati.append("giorno_nascita", giorno);
+            dati.append("mese_nascita", mese);
+            dati.append("anno_nascita", anno);
+            dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
             dati.append("corso", corsoSelezionatoInput.value);
             dati.append("categoria", categoria);
 
@@ -355,20 +493,32 @@
                 method: "POST", 
                 body: dati 
             })
-                .then(response => response.text())
+                .then(response => {
+                    return response.text().then(text => {
+                        // Prova a parsare come JSON, altrimenti usa testo semplice
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            return text;
+                        }
+                    });
+                })
                 .then(resp => {
                     loadingIscrizione.style.display = "none";
                     btnIscriviti.disabled = false;
                     
-                    if (resp === "OK") {
+                    // Gestisci sia risposte JSON che testo
+                    const result = typeof resp === 'object' ? resp.result : resp;
+                    
+                    if (result === "OK" || (resp && resp.success)) {
                         step2.classList.add("hidden");
                         confermaDiv.classList.remove("hidden");
                         nomeConferma.textContent = nome;
                         corsoConferma.textContent = corsoSelezionatoInput.value;
-                    } else if (resp === "FULL") {
+                    } else if (result === "FULL" || (resp && resp.full)) {
                         showError("Posti esauriti per questo corso! Scegli un altro corso.");
                         caricaCorsi();
-                    } else if (resp === "DUPLICATO") {
+                    } else if (result === "DUPLICATO" || (resp && resp.duplicate)) {
                         showError("Sei già iscritto a un corso! Non puoi iscriverti più volte.");
                     } else {
                         showError("Errore durante l'iscrizione! Riprova più tardi.");
@@ -378,12 +528,16 @@
                     console.error('Errore:', error);
                     loadingIscrizione.style.display = "none";
                     btnIscriviti.disabled = false;
-                    showError("Errore di connessione. Riprova più tardi.");
+                    showError(`Errore di connessione: ${error.message}`);
                 });
         });
 
         // Chiudi scheda
         btnChiudiScheda.addEventListener("click", () => {
+            window.close();
+        });
+        
+        btnChiudiSchedaUni.addEventListener("click", () => {
             window.close();
         });
     </script>
