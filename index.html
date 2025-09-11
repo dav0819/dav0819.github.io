@@ -6,540 +6,588 @@
     <title>Modulo Iscrizione Corsi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        :root { 
-            --primary:#3498db;--primary-light:#e7f2fa;--primary-dark:#2980b9;
-            --success:#2ecc71;--success-dark:#27ae60;
-            --danger:#e74c3c;
-            --warning:#f39c12;--warning-dark:#e67e22;
-            --gray-light:#f8f9fa;--gray:#95a5a6;--dark:#2c3e40;
-            --border-radius:12px;
-        }
-        body {font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;background:linear-gradient(135deg,#f0f4ff,#d9e6ff);display:flex;flex-direction:column;color:var(--dark);}
-        .container {flex:1;width:100%;max-width:500px;margin:0 auto;padding:1rem;display:flex;flex-direction:column;}
-        .header {background:var(--primary);color:white;padding:1rem;text-align:center;position:sticky;top:0;z-index:10;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-        .header h1 {font-size:1.4rem;font-weight:600;margin:0;}
-        .card {background:white;border-radius:var(--border-radius);box-shadow:0 4px 15px rgba(0,0,0,0.1);padding:1.5rem;margin-bottom:1rem;width:100%;}
-        h2 {color:var(--primary);margin-bottom:1.2rem;text-align:center;font-size:1.4rem;}
-        .form-group {margin-bottom:1.5rem;}
-        label {display:block;margin-bottom:0.5rem;font-weight:500;font-size:1rem;}
-        input, select {width:100%;padding:1rem;font-size:1rem;border-radius:var(--border-radius);border:1px solid #ddd;background-color:var(--gray-light);}
-        input:focus, select:focus {border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(52,152,219,0.25);}
-        .btn {display:block;width:100%;padding:1rem;font-size:1.1rem;font-weight:600;border-radius:var(--border-radius);border:none;text-align:center;cursor:pointer;transition:all 0.2s ease;margin-top:1rem;}
-        .btn-primary {background:var(--primary);color:white;}
-        .btn-success {background:var(--success);color:white;}
-        .btn-warning {background:var(--warning);color:white;}
-        .btn-danger {background:var(--danger);color:white;}
-        .error-message {color:var(--danger);font-size:0.9rem;margin-top:0.5rem;display:none;}
-        .loading {display:none;text-align:center;margin:1rem 0;color:var(--primary);}
-        .hidden {display:none;}
-        .center {text-align:center;}
-        .success-icon {font-size:4rem;margin-bottom:1.5rem;color:var(--success);}
-        .footer {text-align:center;padding:1rem;color:var(--gray);font-size:0.9rem;margin-top:auto;}
-        .corsi-container {display:grid;grid-template-columns:1fr;gap:0.8rem;margin-bottom:1rem;}
-        .corso-option {display:flex;align-items:center;padding:1rem;border:2px solid #ddd;border-radius:var(--border-radius);cursor:pointer;transition:all 0.2s ease;background:white;}
-        .corso-option:hover {border-color:var(--primary);background-color:var(--primary-light);}
-        .corso-option.selected {border-color:var(--primary);background-color:var(--primary-light);}
-        .corso-option.disabled {opacity:0.6;cursor:not-allowed;}
-        .status-message {text-align:center;padding:1rem;color:var(--gray);font-style:italic;}
-        
-        .categoria-label {
-            background-color: var(--primary-light);
-            padding: 0.8rem 1rem;
-            border-radius: var(--border-radius);
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-            font-weight: bold;
-            color: var(--primary-dark);
-            text-align: center;
-        }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            margin-left: 0.5rem;
-        }
-        .badge-biennio {
-            background-color: var(--primary-light);
-            color: var(--primary-dark);
-        }
-        .badge-triennio {
-            background-color: var(--success);
-            color: white;
-        }
-        .badge-universitari {
-            background-color: var(--warning);
-            color: white;
-        }
-        .badge-tutti {
-            background-color: var(--gray);
-            color: white;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .error-box {
-            background-color: #ffebee;
-            color: #c62828;
+        :root {
+            --primary: #3498db;
+            --primary-light: #e7f2fa;
+            --primary-dark: #2980b9;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --gray-light: #f8f9fa;
+            --gray: #95a5a6;
+            --dark: #2c3e50;
+            --border-radius: 12px;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f0f4ff, #d9e6ff);
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            color: var(--dark);
+        }
+        
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
             padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-            text-align: center;
-            display: none;
+            display: flex;
+            flex-direction: column;
         }
         
-        .info-box {
-            background-color: #e3f2fd;
-            color: #1565c0;
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        
-        .date-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 0.8rem;
-        }
-        
-        .debug-panel {
-            background-color: #f5f5f5;
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-top: 1rem;
-            font-family: monospace;
-            font-size: 0.8rem;
-            display: none;
-        }
-        
-        .info-icon {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
+        .header {
             background-color: var(--primary);
             color: white;
-            border-radius: 50%;
+            padding: 1rem;
             text-align: center;
-            line-height: 18px;
-            font-size: 12px;
-            margin-left: 5px;
-            cursor: help;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        
+        input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            background-color: var(--gray-light);
+        }
+        
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            border: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 1rem;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:active {
+            background: var(--primary-dark);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden { 
+            display: none; 
+        }
+        
+        .center { 
+            text-align: center; 
+        }
+        
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--success);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 1rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: auto;
+        }
+        
+        /* Stile per i corsi */
+        .corsi-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .corso-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: white;
+        }
+        
+        .corso-option:hover {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+        
+        .corso-option.selected {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+        
+        .corso-option.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .selection-indicator {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .corso-option.selected .selection-indicator {
+            border-color: var(--primary);
+            background-color: var(--primary);
+        }
+        
+        .corso-option.selected .selection-indicator::after {
+            content: "";
+            display: block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: white;
+        }
+        
+        .corso-info {
+            flex-grow: 1;
+        }
+        
+        .corso-titolo {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            font-size: 1.1rem;
+        }
+        
+        .corso-posti {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .corso-option.disabled .corso-posti {
+            color: var(--danger);
+        }
+        
+        .status-message {
+            text-align: center;
+            padding: 1rem;
+            color: var(--gray);
+            font-style: italic;
+        }
+        
+        .retry-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .card {
+                padding: 1.2rem;
+            }
+            
+            .btn {
+                padding: 1.2rem;
+                font-size: 1.2rem;
+            }
+            
+            input {
+                padding: 1.2rem;
+                font-size: 1.1rem;
+            }
+            
+            .corso-option {
+                padding: 1.2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header"><h1>Iscrizione Corsi</h1></div>
+    <div class="header">
+        <h1>Iscrizione Corsi</h1>
+    </div>
+
     <div class="container">
-        <div class="info-box">
-            <i class="fas fa-info-circle"></i> Compila il modulo per iscriverti a uno dei corsi disponibili
-        </div>
-
-        <div class="error-box" id="errorGeneral">
-            <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
-        </div>
-
-        <!-- STEP 1 -->
-        <div id="step1" class="card">
-            <h2>Dati personali</h2>
-            <div class="form-group">
-                <label for="nome">Nome</label>
-                <input type="text" id="nome" placeholder="Il tuo nome" required>
-                <div class="error-message" id="error-nome">Inserisci un nome valido</div>
-            </div>
-            <div class="form-group">
-                <label for="cognome">Cognome</label>
-                <input type="text" id="cognome" placeholder="Il tuo cognome" required>
-                <div class="error-message" id="error-cognome">Inserisci un cognome valido</div>
-            </div>
-            <div class="form-group">
-                <label for="data-nascita">Data di nascita <span class="info-icon" title="La categoria verrà determinata automaticamente in base all'anno di nascita">?</span></label>
-                <div class="date-container">
-                    <div>
-                        <label for="giorno">Giorno</label>
-                        <input type="number" id="giorno" min="1" max="31" placeholder="GG" required>
+        <div id="main-form">
+            <div class="card">
+                <h2>Modulo Iscrizione Corso</h2>
+                
+                <form id="formCompleto">
+                    <div class="form-group">
+                        <label for="nome">Nome</label>
+                        <input type="text" id="nome" name="nome" required placeholder="Il tuo nome">
+                        <div class="error-message" id="error-nome">Inserisci un nome valido</div>
                     </div>
-                    <div>
-                        <label for="mese">Mese</label>
-                        <select id="mese" required>
-                            <option value="">MM</option>
-                            <option value="1">Gennaio</option>
-                            <option value="2">Febbraio</option>
-                            <option value="3">Marzo</option>
-                            <option value="4">Aprile</option>
-                            <option value="5">Maggio</option>
-                            <option value="6">Giugno</option>
-                            <option value="7">Luglio</option>
-                            <option value="8">Agosto</option>
-                            <option value="9">Settembre</option>
-                            <option value="10">Ottobre</option>
-                            <option value="11">Novembre</option>
-                            <option value="12">Dicembre</option>
-                        </select>
+                    
+                    <div class="form-group">
+                        <label for="cognome">Cognome</label>
+                        <input type="text" id="cognome" name="cognome" required placeholder="Il tuo cognome">
+                        <div class="error-message" id="error-cognome">Inserisci un cognome valido</div>
                     </div>
-                    <div>
-                        <label for="anno">Anno</label>
-                        <input type="number" id="anno" min="1900" max="2025" placeholder="AAAA" required>
+                    
+                    <div class="form-group">
+                        <label for="anno">Anno di nascita</label>
+                        <input type="number" id="anno" name="anno" min="1900" max="2023" placeholder="Es: 2005" required>
+                        <div class="error-message" id="error-anno">Inserisci un anno valido (1900-2023)</div>
                     </div>
-                </div>
-                <div class="error-message" id="error-data">Inserisci una data valida</div>
+                    
+                    <div class="form-group">
+                        <label>Seleziona un corso disponibile</label>
+                        <div class="corsi-container" id="corsiContainer">
+                            <!-- I corsi verranno caricati dinamicamente -->
+                        </div>
+                        <div id="corsiStatus" class="status-message">Caricamento corsi in corso...</div>
+                        <input type="hidden" id="corsoSelezionato" name="corso" required>
+                        <div class="error-message" id="error-corso">Seleziona un corso</div>
+                    </div>
+                    
+                    <div class="loading" id="loadingIscrizione">
+                        <div class="loading-spinner"></div>
+                        <p>Elaborazione in corso...</p>
+                    </div>
+                    
+                    <button type="button" id="btnIscriviti" class="btn btn-primary">Iscriviti</button>
+                </form>
             </div>
-            <button id="btnAvanti" class="btn btn-primary">Avanti</button>
-        </div>
 
-        <!-- STEP 2 -->
-        <div id="step2" class="card hidden">
-            <h2>Seleziona un corso</h2>
-            <div id="categoriaInfo" class="categoria-label"></div>
-            <div class="corsi-container" id="corsiContainer"></div>
-            <div id="corsiStatus" class="status-message">Caricamento corsi in corso...</div>
-            <input type="hidden" id="corsoSelezionato">
-            <div class="error-message" id="error-corso">Seleziona un corso</div>
-            <div class="loading" id="loadingIscrizione">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Elaborazione in corso...</p>
+            <!-- Conferma -->
+            <div id="conferma" class="card center hidden">
+                <div class="success-icon">✅</div>
+                <h2>Iscrizione completata!</h2>
+                <p>Grazie per esserti iscritto al corso.</p>
+                <p>Riceverai una email di conferma a breve.</p>
+                <button class="btn btn-success" id="btnChiudi">Chiudi</button>
             </div>
-            <button id="btnIscriviti" class="btn btn-primary">Iscriviti</button>
-            <button id="btnIndietro" class="btn" style="background: var(--gray-light); color: var(--dark); margin-top: 0.5rem;">Indietro</button>
         </div>
 
-        <!-- STEP 3 - Conferma iscrizione normale -->
-        <div id="conferma" class="card center hidden">
-            <div class="success-icon">✅</div>
-            <h2>Iscrizione Completata!</h2>
-            <p>Grazie <strong id="nomeConferma"></strong> per esserti iscritto al corso <strong id="corso-conferma"></strong>.</p>
-            <button class="btn btn-success" id="btnChiudiScheda">Chiudi Scheda</button>
+        <div class="footer">
+            <p>© 2023 - Tutti i diritti riservati</p>
         </div>
-        
-        <!-- STEP 3 - Conferma per universitari -->
-        <div id="conferma-universitari" class="card center hidden">
-            <div class="success-icon">📩</div>
-            <h2>Richiesta Registrata!</h2>
-            <p>Grazie <strong id="nomeConfermaUni"></strong> per la tua richiesta di iscrizione.</p>
-            <p>Poiché sei universitario, riceverai presto notizie direttamente da Nino riguardo al corso che potrai seguire.</p>
-            <button class="btn btn-success" id="btnChiudiSchedaUni">Chiudi Scheda</button>
-        </div>
-
-        <div class="footer"><p>© 2023 - Tutti i diritti riservati</p></div>
     </div>
 
     <script>
-        // Sostituisci con il tuo URL di Google Apps Script
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxD3cVusTuGttNPWHU30qdWgiRj1Ct6GMM9pm7uxIOSwib_lQNRdyTxnoCu9hhPn3EBwA/exec";
-
-        // elementi
-        const step1 = document.getElementById("step1");
-        const step2 = document.getElementById("step2");
+        // URL dello script Google Apps
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzbgpsuWvN9cXaw5-_i7i6MNCeZrATTpG7sa9d1OLDVjE1voYrn2fBNtSoAQptjwp-_yw/exec";
+        
+        // Elementi DOM
+        const mainForm = document.getElementById("main-form");
         const confermaDiv = document.getElementById("conferma");
-        const confermaUniDiv = document.getElementById("conferma-universitari");
-        const btnAvanti = document.getElementById("btnAvanti");
-        const btnIscriviti = document.getElementById("btnIscriviti");
-        const btnIndietro = document.getElementById("btnIndietro");
-        const btnChiudiScheda = document.getElementById("btnChiudiScheda");
-        const btnChiudiSchedaUni = document.getElementById("btnChiudiSchedaUni");
         const corsiContainer = document.getElementById("corsiContainer");
         const corsiStatus = document.getElementById("corsiStatus");
         const corsoSelezionatoInput = document.getElementById("corsoSelezionato");
-        const corsoConferma = document.getElementById("corso-conferma");
-        const nomeConferma = document.getElementById("nomeConferma");
-        const nomeConfermaUni = document.getElementById("nomeConfermaUni");
+        const btnIscriviti = document.getElementById("btnIscriviti");
+        const btnChiudi = document.getElementById("btnChiudi");
         const loadingIscrizione = document.getElementById("loadingIscrizione");
-        const categoriaInfo = document.getElementById("categoriaInfo");
-        const errorGeneral = document.getElementById("errorGeneral");
-        const errorText = document.getElementById("errorText");
-
-        let nome = "", cognome = "", giorno = "", mese = "", anno = "", categoria = "";
-        let isUniversitario = false;
-
-        // Funzione per mostrare errori
-        function showError(message) {
-            errorText.textContent = message;
-            errorGeneral.style.display = 'block';
-            setTimeout(() => {
-                errorGeneral.style.display = 'none';
-            }, 5000);
-        }
-
-        // Funzione per validare la data
-        function isValidDate(g, m, a) {
-            const day = parseInt(g);
-            const month = parseInt(m);
-            const year = parseInt(a);
-            
-            if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
-            
-            // Controllo base
-            if (year < 1900 || year > new Date().getFullYear()) return false;
-            if (month < 1 || month > 12) return false;
-            
-            // Controllo giorni nel mese
-            const daysInMonth = new Date(year, month, 0).getDate();
-            if (day < 1 || day > daysInMonth) return false;
-            
-            return true;
-        }
-
-        // Funzione per validare il form
-        function validateForm() {
-            const nome = document.getElementById("nome").value.trim();
-            const cognome = document.getElementById("cognome").value.trim();
-            
-            if (nome.length < 2) {
-                showError("Il nome deve avere almeno 2 caratteri");
-                return false;
-            }
-            
-            if (cognome.length < 2) {
-                showError("Il cognome deve avere almeno 2 caratteri");
-                return false;
-            }
-            
-            return true;
-        }
-
-        // STEP 1 -> STEP 2
-        btnAvanti.addEventListener("click", () => {
-            if (!validateForm()) return;
-            
-            nome = document.getElementById("nome").value.trim();
-            cognome = document.getElementById("cognome").value.trim();
-            giorno = document.getElementById("giorno").value.trim();
-            mese = document.getElementById("mese").value;
-            anno = document.getElementById("anno").value.trim();
-            
-            // Validazione
-            if (!nome) {
-                showError("Inserisci il tuo nome");
-                return;
-            }
-            
-            if (!cognome) {
-                showError("Inserisci il tuo cognome");
-                return;
-            }
-            
-            if (!isValidDate(giorno, mese, anno)) {
-                showError("Inserisci una data di nascita valida");
-                return;
-            }
-            
-            // Calcola l'età e determina la categoria
-            const birthYear = parseInt(anno);
-            const currentYear = new Date().getFullYear();
-            const age = currentYear - birthYear;
-            
-            // Determinazione automatica della categoria in base all'anno di nascita
-            // Biennio: nati dal 2011 in poi
-            // Triennio: nati dal 2008 al 2010
-            // Universitari: nati nel 2007 e precedenti
-            if (birthYear >= 2011) {
-                categoria = "biennio";
-            } else if (birthYear >= 2008 && birthYear <= 2010) {
-                categoria = "triennio";
-            } else {
-                categoria = "universitari";
-                isUniversitario = true;
-            }
-            
-            // Verifica se è universitario
-            if (isUniversitario) {
-                // Salta la selezione del corso e mostra direttamente la conferma per universitari
-                step1.classList.add("hidden");
-                confermaUniDiv.classList.remove("hidden");
-                nomeConfermaUni.textContent = nome;
-                
-                // Invia i dati per gli universitari
-                inviaDatiUniversitari();
-                return;
-            }
-            
-            // Se non è universitario, procedi normalmente
-            step1.classList.add("hidden");
-            step2.classList.remove("hidden");
-            categoriaInfo.textContent = `Categoria: ${categoria.toUpperCase()} (${age} anni)`;
+        
+        // Carica i corsi all'avvio
+        document.addEventListener('DOMContentLoaded', function() {
             caricaCorsi();
-        });
-
-        // Torna indietro
-        btnIndietro.addEventListener("click", () => {
-            step2.classList.add("hidden");
-            step1.classList.remove("hidden");
-            errorGeneral.style.display = 'none';
-        });
-
-        // Funzione per inviare i dati degli universitari
-        function inviaDatiUniversitari() {
-            const dati = new URLSearchParams();
-            dati.append("nome", nome);
-            dati.append("cognome", cognome);
-            dati.append("giorno_nascita", giorno);
-            dati.append("mese_nascita", mese);
-            dati.append("anno_nascita", anno);
-            dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
-            dati.append("categoria", "universitari");
-            dati.append("corso", "Da definire con Nino");
-
-            fetch(scriptURL, { 
-                method: "POST", 
-                body: dati 
-            })
-                .then(response => response.text())
-                .then(resp => {
-                    console.log("Risposta server universitari:", resp);
-                })
-                .catch(error => {
-                    console.error('Errore invio dati universitari:', error);
-                });
-        }
-
-        // CARICAMENTO CORSI
-        function caricaCorsi() {
-            corsiContainer.innerHTML = "";
-            corsiStatus.style.display = "block";
             
-            fetch(scriptURL)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Errore nel caricamento dei corsi');
-                    }
-                    return response.json();
-                })
-                .then(corsi => {
-                    corsiStatus.style.display = "none";
-                    
-                    if (!corsi || corsi.length === 0) {
-                        corsiContainer.innerHTML = `<div class="status-message">Nessun corso disponibile al momento.</div>`;
-                        return;
-                    }
-                    
-                    // Filtra i corsi per categoria
-                    const corsiFiltrati = corsi.filter(c => {
-                        if (c && c.length >= 3) {
-                            const corsoCategoria = c[2] ? c[2].toLowerCase().trim() : "";
-                            return corsoCategoria === categoria || corsoCategoria === "tutti";
-                        }
-                        return false;
-                    });
-                    
-                    if (corsiFiltrati.length === 0) {
-                        corsiContainer.innerHTML = `<div class="status-message">Nessun corso disponibile per la categoria ${categoria} al momento.</div>`;
-                        return;
-                    }
-                    
-                    corsiFiltrati.forEach(c => {
-                        if (c && c.length >= 2) {
-                            let nomeCorso = c[0];
-                            let posti = Number(c[1]);
-                            let corsoCategoria = c[2] || "tutti";
-                            
-                            const div = document.createElement("div");
-                            div.className = "corso-option";
-                            if (posti <= 0) {
-                                div.classList.add("disabled");
-                            }
-                            
-                            // Aggiungi badge per la categoria del corso
-                            let badgeClass = "badge-tutti";
-                            if (corsoCategoria === "biennio") badgeClass = "badge-biennio";
-                            else if (corsoCategoria === "triennio") badgeClass = "badge-triennio";
-                            else if (corsoCategoria === "universitari") badgeClass = "badge-universitari";
-                            
-                            div.innerHTML = `
-                                <div style="flex-grow:1">
-                                    <div class="corso-titolo">${nomeCorso} <span class="badge ${badgeClass}">${corsoCategoria.toUpperCase()}</span></div>
-                                    <div class="corso-posti">${posti > 0 ? posti + " posti disponibili" : "Posti esauriti"}</div>
-                                </div>
-                            `;
-                            
-                            if (posti > 0) {
-                                div.addEventListener("click", () => {
-                                    document.querySelectorAll(".corso-option").forEach(o => o.classList.remove("selected"));
-                                    div.classList.add("selected");
-                                    corsoSelezionatoInput.value = nomeCorso;
-                                });
-                            }
-                            
-                            corsiContainer.appendChild(div);
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('Errore:', error);
-                    corsiStatus.textContent = "Errore nel caricamento dei corsi. Riprova più tardi.";
-                });
-        }
-
-        // ISCRIZIONE
-        btnIscriviti.addEventListener("click", () => {
-            if (!corsoSelezionatoInput.value) {
-                showError("Seleziona un corso!");
-                return;
-            }
-            
-            loadingIscrizione.style.display = "block";
-            btnIscriviti.disabled = true;
-            
-            const dati = new URLSearchParams();
-            dati.append("nome", nome);
-            dati.append("cognome", cognome);
-            dati.append("giorno_nascita", giorno);
-            dati.append("mese_nascita", mese);
-            dati.append("anno_nascita", anno);
-            dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
-            dati.append("corso", corsoSelezionatoInput.value);
-            dati.append("categoria", categoria);
-
-            fetch(scriptURL, { 
-                method: "POST", 
-                body: dati 
-            })
-                .then(response => {
-                    return response.text().then(text => {
-                        // Prova a parsare come JSON, altrimenti usa testo semplice
-                        try {
-                            return JSON.parse(text);
-                        } catch (e) {
-                            return text;
-                        }
-                    });
-                })
-                .then(resp => {
-                    loadingIscrizione.style.display = "none";
-                    btnIscriviti.disabled = false;
-                    
-                    // Gestisci sia risposte JSON che testo
-                    const result = typeof resp === 'object' ? resp.result : resp;
-                    
-                    if (result === "OK" || (resp && resp.success)) {
-                        step2.classList.add("hidden");
-                        confermaDiv.classList.remove("hidden");
-                        nomeConferma.textContent = nome;
-                        corsoConferma.textContent = corsoSelezionatoInput.value;
-                    } else if (result === "FULL" || (resp && resp.full)) {
-                        showError("Posti esauriti per questo corso! Scegli un altro corso.");
-                        caricaCorsi();
-                    } else if (result === "DUPLICATO" || (resp && resp.duplicate)) {
-                        showError("Sei già iscritto a un corso! Non puoi iscriverti più volte.");
-                    } else {
-                        showError("Errore durante l'iscrizione! Riprova più tardi.");
-                    }
-                })
-                .catch(error => {
-                    console.error('Errore:', error);
-                    loadingIscrizione.style.display = "none";
-                    btnIscriviti.disabled = false;
-                    showError(`Errore di connessione: ${error.message}`);
-                });
-        });
-
-        // Chiudi scheda
-        btnChiudiScheda.addEventListener("click", () => {
-            window.close();
+            // Aggiungi event listener al pulsante
+            btnIscriviti.addEventListener('click', gestisciIscrizione);
+            btnChiudi.addEventListener('click', function() {
+                // Tentativo di chiudere la finestra
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.close();
+                }
+            });
         });
         
-        btnChiudiSchedaUni.addEventListener("click", () => {
-            window.close();
-        });
+        // Funzione per validare i campi
+        function validaCampi() {
+            let valido = true;
+            
+            // Validazione nome
+            const nome = document.getElementById('nome').value.trim();
+            if (!nome) {
+                document.getElementById('error-nome').style.display = 'block';
+                document.getElementById('nome').style.borderColor = '#dc3545';
+                valido = false;
+            } else {
+                document.getElementById('error-nome').style.display = 'none';
+                document.getElementById('nome').style.borderColor = '#ddd';
+            }
+            
+            // Validazione cognome
+            const cognome = document.getElementById('cognome').value.trim();
+            if (!cognome) {
+                document.getElementById('error-cognome').style.display = 'block';
+                document.getElementById('cognome').style.borderColor = '#dc3545';
+                valido = false;
+            } else {
+                document.getElementById('error-cognome').style.display = 'none';
+                document.getElementById('cognome').style.borderColor = '#ddd';
+            }
+            
+            // Validazione anno
+            const anno = document.getElementById('anno').value;
+            const year = parseInt(anno);
+            const currentYear = new Date().getFullYear();
+            if (isNaN(year) || year < 1900 || year > currentYear) {
+                document.getElementById('error-anno').style.display = 'block';
+                document.getElementById('anno').style.borderColor = '#dc3545';
+                valido = false;
+            } else {
+                document.getElementById('error-anno').style.display = 'none';
+                document.getElementById('anno').style.borderColor = '#ddd';
+            }
+            
+            // Validazione corso
+            const corso = corsoSelezionatoInput.value;
+            if (!corso) {
+                document.getElementById('error-corso').style.display = 'block';
+                valido = false;
+            } else {
+                document.getElementById('error-corso').style.display = 'none';
+            }
+            
+            return valido;
+        }
+        
+        // Funzione per caricare i corsi
+        function caricaCorsi() {
+            corsiContainer.innerHTML = '';
+            corsiStatus.textContent = 'Caricamento corsi in corso...';
+            corsiStatus.style.display = 'block';
+            
+            fetch(scriptURL)
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error('Errore di rete');
+                    }
+                    return res.json();
+                })
+                .then(corsi => {
+                    corsiStatus.style.display = 'none';
+                    
+                    if (corsi && corsi.length > 0) {
+                        let corsiDisponibili = 0;
+                        
+                        corsi.forEach(c => {
+                            if (c && c.length >= 2) {
+                                let nome = c[0];
+                                let posti = Number(c[1]);
+                                
+                                const corsoOption = document.createElement('div');
+                                corsoOption.className = 'corso-option';
+                                corsoOption.setAttribute('data-value', nome);
+                                
+                                if (posti <= 0) {
+                                    corsoOption.classList.add('disabled');
+                                } else {
+                                    corsiDisponibili++;
+                                }
+                                
+                                corsoOption.innerHTML = `
+                                    <div class="selection-indicator"></div>
+                                    <div class="corso-info">
+                                        <div class="corso-titolo">${nome}</div>
+                                        <div class="corso-posti">${posti > 0 ? 
+                                            `${posti} posto${posti !== 1 ? 'i' : ''} disponibili` : 
+                                            'Posti esauriti'}</div>
+                                    </div>
+                                `;
+                                
+                                if (posti > 0) {
+                                    corsoOption.addEventListener('click', function() {
+                                        // Deseleziona tutte le opzioni
+                                        document.querySelectorAll('.corso-option').forEach(opt => {
+                                            opt.classList.remove('selected');
+                                        });
+                                        
+                                        // Seleziona l'opzione corrente
+                                        this.classList.add('selected');
+                                        corsoSelezionatoInput.value = nome;
+                                        
+                                        // Rimuovi eventuale messaggio di errore
+                                        document.getElementById('error-corso').style.display = 'none';
+                                    });
+                                }
+                                
+                                corsiContainer.appendChild(corsoOption);
+                            }
+                        });
+                        
+                        if (corsiDisponibili === 0) {
+                            corsiStatus.textContent = 'Nessun corso disponibile al momento';
+                            corsiStatus.style.display = 'block';
+                        }
+                    } else {
+                        corsiStatus.textContent = 'Nessun corso disponibile al momento';
+                        corsiStatus.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    console.error('Errore nel caricamento corsi:', err);
+                    corsiStatus.innerHTML = 'Errore nel caricamento dei corsi. <button class="retry-btn" id="retryBtn">Riprova</button>';
+                    corsiStatus.style.display = 'block';
+                    
+                    document.getElementById('retryBtn').addEventListener('click', caricaCorsi);
+                });
+        }
+        
+        // Funzione per gestire l'iscrizione
+        function gestisciIscrizione() {
+            if (!validaCampi()) {
+                return;
+            }
+            
+            // Raccogli i dati
+            const nome = document.getElementById('nome').value.trim();
+            const cognome = document.getElementById('cognome').value.trim();
+            const anno = document.getElementById('anno').value;
+            const corso = corsoSelezionatoInput.value;
+            
+            // Mostra il loading
+            loadingIscrizione.style.display = 'block';
+            btnIscriviti.disabled = true;
+
+            // Prepara i dati
+            const dati = new URLSearchParams();
+            dati.append("nome", nome);
+            dati.append("cognome", cognome);
+            dati.append("anno", anno);
+            dati.append("corso", corso);
+
+            // Invia i dati
+            fetch(scriptURL, { 
+                method: "POST", 
+                body: dati 
+            })
+            .then(res => res.text())
+            .then(resp => {
+                loadingIscrizione.style.display = 'none';
+                btnIscriviti.disabled = false;
+                
+                if (resp === "OK") {
+                    // Successo - mostra conferma
+                    mainForm.classList.add("hidden");
+                    confermaDiv.classList.remove("hidden");
+                } else if (resp === "FULL") {
+                    alert("Posti esauriti per questo corso! Scegline un altro.");
+                    caricaCorsi(); // Ricarica i corsi
+                } else if (resp === "DUPLICATO") {
+                    alert("Sei già iscritto a un corso con questi dati!");
+                } else {
+                    alert("Errore durante l'iscrizione! Riprova più tardi.");
+                }
+            })
+            .catch(err => {
+                console.error('Errore:', err);
+                loadingIscrizione.style.display = 'none';
+                btnIscriviti.disabled = false;
+                alert("Errore di connessione! Riprova più tardi.");
+            });
+        }
     </script>
 </body>
 </html>
