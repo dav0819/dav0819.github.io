@@ -337,6 +337,8 @@
 
         let nome = "", cognome = "", giorno = "", mese = "", anno = "", categoria = "";
         let isUniversitario = false;
+        let isSending = false; // Variabile per prevenire doppi invii
+        let ultimaIscrizione = null; // Memorizza l'ultima iscrizione
         
         // Variabili per l'easter egg
         let keySequence = "";
@@ -370,21 +372,36 @@
             return true;
         }
 
-        // Funzione per validare il form
-        function validateForm() {
-            const nome = document.getElementById("nome").value.trim();
-            const cognome = document.getElementById("cognome").value.trim();
+        // Funzione per controllare duplicati lato client
+        function controllaDuplicatoClient() {
+            const nomeInput = document.getElementById("nome").value.trim().toLowerCase();
+            const cognomeInput = document.getElementById("cognome").value.trim().toLowerCase();
+            const giornoInput = document.getElementById("giorno").value;
+            const meseInput = document.getElementById("mese").value;
+            const annoInput = document.getElementById("anno").value;
             
-            if (nome.length < 2) {
-                showError("Il nome deve avere almeno 2 caratteri");
+            // Crea un oggetto con i dati corrente
+            const corrente = { 
+                nome: nomeInput, 
+                cognome: cognomeInput, 
+                giorno: giornoInput, 
+                mese: meseInput, 
+                anno: annoInput 
+            };
+            
+            // Controlla se è uguale all'ultima iscrizione
+            if (ultimaIscrizione && 
+                ultimaIscrizione.nome === corrente.nome &&
+                ultimaIscrizione.cognome === corrente.cognome &&
+                ultimaIscrizione.giorno === corrente.giorno &&
+                ultimaIscrizione.mese === corrente.mese &&
+                ultimaIscrizione.anno === corrente.anno) {
+                
+                showError("Hai già inviato un'iscrizione con questi dati. Non puoi iscriverti più volte.");
                 return false;
             }
             
-            if (cognome.length < 2) {
-                showError("Il cognome deve avere almeno 2 caratteri");
-                return false;
-            }
-            
+            ultimaIscrizione = corrente;
             return true;
         }
 
@@ -402,7 +419,9 @@
 
         // STEP 1 -> STEP 2
         btnAvanti.addEventListener("click", () => {
-            if (!validateForm()) return;
+            if (isSending) return;
+            
+            if (!controllaDuplicatoClient()) return;
             
             nome = document.getElementById("nome").value.trim();
             cognome = document.getElementById("cognome").value.trim();
@@ -426,15 +445,15 @@
                 return;
             }
             
+            isSending = true;
+            btnAvanti.disabled = true;
+            
             // Calcola l'età e determina la categoria
             const birthYear = parseInt(anno);
             const currentYear = new Date().getFullYear();
             const age = currentYear - birthYear;
             
             // Determinazione automatica della categoria in base all'anno di nascita
-            // Biennio: nati dal 2011 in poi
-            // Triennio: nati dal 2008 al 2010
-            // Universitari: nati nel 2007 e precedenti
             if (birthYear >= 2011) {
                 categoria = "biennio";
                 isUniversitario = false;
@@ -442,7 +461,6 @@
                 categoria = "triennio";
                 isUniversitario = false;
             } else if (birthYear === 2007) {
-                // CORREZIONE: quelli nati nel 2007 vanno nel triennio
                 categoria = "triennio";
                 isUniversitario = false;
             } else {
@@ -459,6 +477,8 @@
                 
                 // Invia i dati per gli universitari
                 inviaDatiUniversitari();
+                isSending = false;
+                btnAvanti.disabled = false;
                 return;
             }
             
@@ -467,6 +487,9 @@
             step2.classList.remove("hidden");
             categoriaInfo.textContent = `Categoria: ${categoria.toUpperCase()} (${age} anni)`;
             caricaCorsi();
+            
+            isSending = false;
+            btnAvanti.disabled = false;
         });
 
         // Torna indietro
@@ -478,6 +501,9 @@
 
         // Funzione per inviare i dati degli universitari
         function inviaDatiUniversitari() {
+            if (isSending) return;
+            isSending = true;
+            
             const dati = new URLSearchParams();
             dati.append("nome", nome);
             dati.append("cognome", cognome);
@@ -500,15 +526,19 @@
                         console.log("Dati universitari inviati con successo");
                     } else if (resp.error) {
                         console.error("Errore invio dati universitari:", resp.error);
+                        showError("Errore durante l'invio: " + resp.error);
                     } else if (resp.duplicate) {
                         // Gestione duplicato per universitari
                         showError("Sei già iscritto! Non puoi iscriverti più volte.");
                         step1.classList.remove("hidden");
                         confermaUniDiv.classList.add("hidden");
                     }
+                    isSending = false;
                 })
                 .catch(error => {
                     console.error('Errore invio dati universitari:', error);
+                    showError("Errore di connessione durante l'invio");
+                    isSending = false;
                 });
         }
 
@@ -595,11 +625,14 @@
 
         // ISCRIZIONE
         btnIscriviti.addEventListener("click", () => {
+            if (isSending) return;
+            
             if (!corsoSelezionatoInput.value) {
                 showError("Seleziona un corso!");
                 return;
             }
             
+            isSending = true;
             loadingIscrizione.style.display = "block";
             btnIscriviti.disabled = true;
             
@@ -621,6 +654,7 @@
                 .then(resp => {
                     loadingIscrizione.style.display = "none";
                     btnIscriviti.disabled = false;
+                    isSending = false;
                     
                     if (resp.success) {
                         step2.classList.add("hidden");
@@ -644,6 +678,7 @@
                     console.error('Errore:', error);
                     loadingIscrizione.style.display = "none";
                     btnIscriviti.disabled = false;
+                    isSending = false;
                     showError(`Errore di connessione: ${error.message}`);
                 });
         });
