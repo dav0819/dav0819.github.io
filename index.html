@@ -454,19 +454,17 @@
             const age = currentYear - birthYear;
             
             // Determinazione automatica della categoria in base all'anno di nascita
-            if (birthYear >= 2011) {
-                categoria = "biennio";
-                isUniversitario = false;
-            } else if (birthYear >= 2008 && birthYear <= 2010) {
-                categoria = "triennio";
-                isUniversitario = false;
-            } else if (birthYear === 2007) {
-                categoria = "triennio";
-                isUniversitario = false;
-            } else {
-                categoria = "universitari";
-                isUniversitario = true;
-            }
+// Determinazione automatica della categoria in base all'anno di nascita
+if (birthYear >= 2010) {  // Modificato: 2010 invece di 2011
+    categoria = "biennio";
+    isUniversitario = false;
+} else if (birthYear >= 2007 && birthYear <= 2009) {  // Modificato: 2007-2009 invece di 2008-2010
+    categoria = "triennio";
+    isUniversitario = false;
+} else {
+    categoria = "universitari";
+    isUniversitario = true;
+}
             
             // Verifica se è universitario
             if (isUniversitario) {
@@ -716,3 +714,4 @@
     </script>
 </body>
 </html>
+
