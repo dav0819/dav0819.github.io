@@ -6,6 +6,7 @@
     <title>Modulo Iscrizione Corsi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* (stili invariati - lascio il tuo CSS originale) */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         :root { 
             --primary:#3498db;--primary-light:#e7f2fa;--primary-dark:#2980b9;
@@ -256,6 +257,16 @@
                 </div>
                 <div class="error-message" id="error-data">Inserisci una data valida</div>
             </div>
+            <!-- NUOVO CAMPO CENA -->
+            <div class="form-group">
+                <label for="cena">Vuoi rimanere a cena?</label>
+                <select id="cena" required>
+                    <option value="">Seleziona...</option>
+                    <option value="Sì">Sì</option>
+                    <option value="No">No</option>
+                </select>
+                <div class="error-message" id="error-cena">Seleziona un'opzione per la cena</div>
+            </div>
             <button id="btnAvanti" class="btn btn-primary">Avanti</button>
         </div>
 
@@ -309,7 +320,7 @@
         // Sostituisci con il tuo URL di Google Apps Script
         const scriptURL = "https://script.google.com/macros/s/AKfycbxmO8cvSGwh4NhT4EGN6AmCqg8dmhHT4kLKs0G3nw_kkJlawzeR7CuKVsOdWUNBas9kxQ/exec";
 
-        // elementi
+        // Elementi
         const step1 = document.getElementById("step1");
         const step2 = document.getElementById("step2");
         const confermaDiv = document.getElementById("conferma");
@@ -339,6 +350,7 @@
         let isUniversitario = false;
         let isSending = false; // Variabile per prevenire doppi invii
         let ultimaIscrizione = null; // Memorizza l'ultima iscrizione
+        let sceltaCena = ""; // <--- NUOVA VARIABILE
         
         // Variabili per l'easter egg
         let keySequence = "";
@@ -428,6 +440,7 @@
             giorno = document.getElementById("giorno").value.trim();
             mese = document.getElementById("mese").value;
             anno = document.getElementById("anno").value.trim();
+            sceltaCena = document.getElementById("cena").value; // <--- LEGGI IL VALORE
             
             // Validazione
             if (!nome) {
@@ -445,6 +458,11 @@
                 return;
             }
             
+            if (!sceltaCena) { // <--- VALIDAZIONE CAMPO CENA
+                showError("Seleziona se vuoi rimanere a cena");
+                return;
+            }
+            
             isSending = true;
             btnAvanti.disabled = true;
             
@@ -454,17 +472,16 @@
             const age = currentYear - birthYear;
             
             // Determinazione automatica della categoria in base all'anno di nascita
-// Determinazione automatica della categoria in base all'anno di nascita
-if (birthYear >= 2010) {  // Modificato: 2010 invece di 2011
-    categoria = "biennio";
-    isUniversitario = false;
-} else if (birthYear >= 2007 && birthYear <= 2009) {  // Modificato: 2007-2009 invece di 2008-2010
-    categoria = "triennio";
-    isUniversitario = false;
-} else {
-    categoria = "universitari";
-    isUniversitario = true;
-}
+            if (birthYear >= 2010) {
+                categoria = "biennio";
+                isUniversitario = false;
+            } else if (birthYear >= 2007 && birthYear <= 2009) {
+                categoria = "triennio";
+                isUniversitario = false;
+            } else {
+                categoria = "universitari";
+                isUniversitario = true;
+            }
             
             // Verifica se è universitario
             if (isUniversitario) {
@@ -473,7 +490,7 @@ if (birthYear >= 2010) {  // Modificato: 2010 invece di 2011
                 confermaUniDiv.classList.remove("hidden");
                 nomeConfermaUni.textContent = nome;
                 
-                // Invia i dati per gli universitari
+                // Invia i dati per gli universitari (inclusa cena)
                 inviaDatiUniversitari();
                 isSending = false;
                 btnAvanti.disabled = false;
@@ -511,6 +528,7 @@ if (birthYear >= 2010) {  // Modificato: 2010 invece di 2011
             dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
             dati.append("categoria", "universitari");
             dati.append("corso", "Da definire con Nino");
+            dati.append("cena", sceltaCena); // <--- AGGIUNGI CENA
 
             fetch(scriptURL, { 
                 method: "POST", 
@@ -643,6 +661,7 @@ if (birthYear >= 2010) {  // Modificato: 2010 invece di 2011
             dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
             dati.append("corso", corsoSelezionatoInput.value);
             dati.append("categoria", categoria);
+            dati.append("cena", sceltaCena); // <--- AGGIUNGI CENA
 
             fetch(scriptURL, { 
                 method: "POST", 
@@ -675,7 +694,7 @@ if (birthYear >= 2010) {  // Modificato: 2010 invece di 2011
                 .catch(error => {
                     console.error('Errore:', error);
                     loadingIscrizione.style.display = "none";
-                    btnIscriviti.disabled = false;
+                    btnIscrivetti.disabled = false;
                     isSending = false;
                     showError(`Errore di connessione: ${error.message}`);
                 });
@@ -714,4 +733,3 @@ if (birthYear >= 2010) {  // Modificato: 2010 invece di 2011
     </script>
 </body>
 </html>
-
