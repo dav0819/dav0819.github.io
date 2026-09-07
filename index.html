@@ -257,16 +257,7 @@
                 </div>
                 <div class="error-message" id="error-data">Inserisci una data valida</div>
             </div>
-            <!-- NUOVO CAMPO CENA -->
-            <div class="form-group">
-                <label for="cena">Vuoi rimanere a cena?</label>
-                <select id="cena" required>
-                    <option value="">Seleziona...</option>
-                    <option value="Sì">Sì</option>
-                    <option value="No">No</option>
-                </select>
-                <div class="error-message" id="error-cena">Seleziona un'opzione per la cena</div>
-            </div>
+            <!-- Campo CENA RIMOSSO -->
             <button id="btnAvanti" class="btn btn-primary">Avanti</button>
         </div>
 
@@ -350,7 +341,6 @@
         let isUniversitario = false;
         let isSending = false; // Variabile per prevenire doppi invii
         let ultimaIscrizione = null; // Memorizza l'ultima iscrizione
-        let sceltaCena = ""; // <--- NUOVA VARIABILE
         
         // Variabili per l'easter egg
         let keySequence = "";
@@ -440,7 +430,6 @@
             giorno = document.getElementById("giorno").value.trim();
             mese = document.getElementById("mese").value;
             anno = document.getElementById("anno").value.trim();
-            sceltaCena = document.getElementById("cena").value; // <--- LEGGI IL VALORE
             
             // Validazione
             if (!nome) {
@@ -455,11 +444,6 @@
             
             if (!isValidDate(giorno, mese, anno)) {
                 showError("Inserisci una data di nascita valida");
-                return;
-            }
-            
-            if (!sceltaCena) { // <--- VALIDAZIONE CAMPO CENA
-                showError("Seleziona se vuoi rimanere a cena");
                 return;
             }
             
@@ -490,7 +474,7 @@
                 confermaUniDiv.classList.remove("hidden");
                 nomeConfermaUni.textContent = nome;
                 
-                // Invia i dati per gli universitari (inclusa cena)
+                // Invia i dati per gli universitari (senza cena)
                 inviaDatiUniversitari();
                 isSending = false;
                 btnAvanti.disabled = false;
@@ -528,7 +512,7 @@
             dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
             dati.append("categoria", "universitari");
             dati.append("corso", "Da definire con Nino");
-            dati.append("cena", sceltaCena); // <--- AGGIUNGI CENA
+            // Il parametro "cena" è stato rimosso
 
             fetch(scriptURL, { 
                 method: "POST", 
@@ -661,7 +645,7 @@
             dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
             dati.append("corso", corsoSelezionatoInput.value);
             dati.append("categoria", categoria);
-            dati.append("cena", sceltaCena); // <--- AGGIUNGI CENA
+            // Il parametro "cena" è stato rimosso
 
             fetch(scriptURL, { 
                 method: "POST", 
