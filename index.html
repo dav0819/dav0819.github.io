@@ -6,7 +6,7 @@
     <title>Modulo Iscrizione Corsi</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* (stili invariati - lascio il tuo CSS originale) */
+        /* (stili invariati - identici a prima) */
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         :root { 
             --primary:#3498db;--primary-light:#e7f2fa;--primary-dark:#2980b9;
@@ -309,7 +309,7 @@
 
     <script>
         // Sostituisci con il tuo URL di Google Apps Script
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxyqw99FVyzWNHSPbyURmZFdiJmBL_VACARY4YJsEOHpD2JSvhL_d_-9snImtv99sss_Q/exec";
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxh9V1Q6tDbEeQRiu60dnWKqqMDxf2Ujrxz994YB2a8eGNPTUVadP-IF7sliFudwSWxiw/exec";
 
         // Elementi
         const step1 = document.getElementById("step1");
@@ -339,14 +339,13 @@
 
         let nome = "", cognome = "", giorno = "", mese = "", anno = "", categoria = "";
         let isUniversitario = false;
-        let isSending = false; // Variabile per prevenire doppi invii
-        let ultimaIscrizione = null; // Memorizza l'ultima iscrizione
+        let isSending = false;
+        let ultimaIscrizione = null;
         
         // Variabili per l'easter egg
         let keySequence = "";
         const secretCode = "nino";
 
-        // Funzione per mostrare errori
         function showError(message) {
             errorText.textContent = message;
             errorGeneral.style.display = 'block';
@@ -355,74 +354,50 @@
             }, 5000);
         }
 
-        // Funzione per validare la data
         function isValidDate(g, m, a) {
             const day = parseInt(g);
             const month = parseInt(m);
             const year = parseInt(a);
-            
             if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
-            
-            // Controllo base
             if (year < 1900 || year > new Date().getFullYear()) return false;
             if (month < 1 || month > 12) return false;
-            
-            // Controllo giorni nel mese
             const daysInMonth = new Date(year, month, 0).getDate();
             if (day < 1 || day > daysInMonth) return false;
-            
             return true;
         }
 
-        // Funzione per controllare duplicati lato client
         function controllaDuplicatoClient() {
             const nomeInput = document.getElementById("nome").value.trim().toLowerCase();
             const cognomeInput = document.getElementById("cognome").value.trim().toLowerCase();
             const giornoInput = document.getElementById("giorno").value;
             const meseInput = document.getElementById("mese").value;
             const annoInput = document.getElementById("anno").value;
-            
-            // Crea un oggetto con i dati corrente
-            const corrente = { 
-                nome: nomeInput, 
-                cognome: cognomeInput, 
-                giorno: giornoInput, 
-                mese: meseInput, 
-                anno: annoInput 
-            };
-            
-            // Controlla se è uguale all'ultima iscrizione
+            const corrente = { nome: nomeInput, cognome: cognomeInput, giorno: giornoInput, mese: meseInput, anno: annoInput };
             if (ultimaIscrizione && 
                 ultimaIscrizione.nome === corrente.nome &&
                 ultimaIscrizione.cognome === corrente.cognome &&
                 ultimaIscrizione.giorno === corrente.giorno &&
                 ultimaIscrizione.mese === corrente.mese &&
                 ultimaIscrizione.anno === corrente.anno) {
-                
                 showError("Hai già inviato un'iscrizione con questi dati. Non puoi iscriverti più volte.");
                 return false;
             }
-            
             ultimaIscrizione = corrente;
             return true;
         }
 
-        // Funzione per mostrare l'easter egg
         function showEasterEgg() {
             easterEgg.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
-        // Funzione per nascondere l'easter egg
         function hideEasterEgg() {
             easterEgg.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
-        // STEP 1 -> STEP 2
         btnAvanti.addEventListener("click", () => {
             if (isSending) return;
-            
             if (!controllaDuplicatoClient()) return;
             
             nome = document.getElementById("nome").value.trim();
@@ -431,35 +406,22 @@
             mese = document.getElementById("mese").value;
             anno = document.getElementById("anno").value.trim();
             
-            // Validazione
-            if (!nome) {
-                showError("Inserisci il tuo nome");
-                return;
-            }
-            
-            if (!cognome) {
-                showError("Inserisci il tuo cognome");
-                return;
-            }
-            
-            if (!isValidDate(giorno, mese, anno)) {
-                showError("Inserisci una data di nascita valida");
-                return;
-            }
+            if (!nome) { showError("Inserisci il tuo nome"); return; }
+            if (!cognome) { showError("Inserisci il tuo cognome"); return; }
+            if (!isValidDate(giorno, mese, anno)) { showError("Inserisci una data di nascita valida"); return; }
             
             isSending = true;
             btnAvanti.disabled = true;
             
-            // Calcola l'età e determina la categoria
             const birthYear = parseInt(anno);
             const currentYear = new Date().getFullYear();
             const age = currentYear - birthYear;
             
-            // Determinazione automatica della categoria in base all'anno di nascita
-            if (birthYear >= 2010) {
+            // NUOVA LOGICA DI CATEGORIZZAZIONE
+            if (birthYear >= 2011) {
                 categoria = "biennio";
                 isUniversitario = false;
-            } else if (birthYear >= 2007 && birthYear <= 2009) {
+            } else if (birthYear >= 2008 && birthYear <= 2010) {
                 categoria = "triennio";
                 isUniversitario = false;
             } else {
@@ -467,21 +429,16 @@
                 isUniversitario = true;
             }
             
-            // Verifica se è universitario
             if (isUniversitario) {
-                // Salta la selezione del corso e mostra direttamente la conferma per universitari
                 step1.classList.add("hidden");
                 confermaUniDiv.classList.remove("hidden");
                 nomeConfermaUni.textContent = nome;
-                
-                // Invia i dati per gli universitari (senza cena)
                 inviaDatiUniversitari();
                 isSending = false;
                 btnAvanti.disabled = false;
                 return;
             }
             
-            // Se non è universitario, procedi normalmente
             step1.classList.add("hidden");
             step2.classList.remove("hidden");
             categoriaInfo.textContent = `Categoria: ${categoria.toUpperCase()} (${age} anni)`;
@@ -491,14 +448,12 @@
             btnAvanti.disabled = false;
         });
 
-        // Torna indietro
         btnIndietro.addEventListener("click", () => {
             step2.classList.add("hidden");
             step1.classList.remove("hidden");
             errorGeneral.style.display = 'none';
         });
 
-        // Funzione per inviare i dati degli universitari
         function inviaDatiUniversitari() {
             if (isSending) return;
             isSending = true;
@@ -512,23 +467,18 @@
             dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
             dati.append("categoria", "universitari");
             dati.append("corso", "Da definire con Nino");
-            // Il parametro "cena" è stato rimosso
+            // NESSUN PARAMETRO "cena"
 
-            fetch(scriptURL, { 
-                method: "POST", 
-                body: dati 
-            })
+            fetch(scriptURL, { method: "POST", body: dati })
                 .then(response => response.json())
                 .then(resp => {
                     console.log("Risposta server universitari:", resp);
                     if (resp.success) {
-                        // Successo
                         console.log("Dati universitari inviati con successo");
                     } else if (resp.error) {
                         console.error("Errore invio dati universitari:", resp.error);
                         showError("Errore durante l'invio: " + resp.error);
                     } else if (resp.duplicate) {
-                        // Gestione duplicato per universitari
                         showError("Sei già iscritto! Non puoi iscriverti più volte.");
                         step1.classList.remove("hidden");
                         confermaUniDiv.classList.add("hidden");
@@ -542,31 +492,25 @@
                 });
         }
 
-        // CARICAMENTO CORSI
         function caricaCorsi() {
             corsiContainer.innerHTML = "";
             corsiStatus.style.display = "block";
             corsiStatus.textContent = "Caricamento corsi in corso...";
             
-            // Aggiungi un parametro alla richiesta per evitare problemi di cache
             const url = scriptURL + "?action=getCorsi&t=" + new Date().getTime();
             
             fetch(url)
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Errore nel caricamento dei corsi');
-                    }
+                    if (!response.ok) throw new Error('Errore nel caricamento dei corsi');
                     return response.json();
                 })
                 .then(corsi => {
                     corsiStatus.style.display = "none";
-                    
                     if (!corsi || corsi.length === 0) {
                         corsiContainer.innerHTML = `<div class="status-message">Nessun corso disponibile al momento.</div>`;
                         return;
                     }
                     
-                    // Filtra i corsi per categoria
                     const corsiFiltrati = corsi.filter(c => {
                         if (c && c.length >= 3) {
                             const corsoCategoria = c[2] ? c[2].toLowerCase().trim() : "";
@@ -588,11 +532,8 @@
                             
                             const div = document.createElement("div");
                             div.className = "corso-option";
-                            if (posti <= 0) {
-                                div.classList.add("disabled");
-                            }
+                            if (posti <= 0) div.classList.add("disabled");
                             
-                            // Aggiungi badge per la categoria del corso
                             let badgeClass = "badge-tutti";
                             if (corsoCategoria === "biennio") badgeClass = "badge-biennio";
                             else if (corsoCategoria === "triennio") badgeClass = "badge-triennio";
@@ -623,10 +564,8 @@
                 });
         }
 
-        // ISCRIZIONE
         btnIscriviti.addEventListener("click", () => {
             if (isSending) return;
-            
             if (!corsoSelezionatoInput.value) {
                 showError("Seleziona un corso!");
                 return;
@@ -645,12 +584,9 @@
             dati.append("data_nascita", `${giorno}/${mese}/${anno}`);
             dati.append("corso", corsoSelezionatoInput.value);
             dati.append("categoria", categoria);
-            // Il parametro "cena" è stato rimosso
+            // NESSUN PARAMETRO "cena"
 
-            fetch(scriptURL, { 
-                method: "POST", 
-                body: dati 
-            })
+            fetch(scriptURL, { method: "POST", body: dati })
                 .then(response => response.json())
                 .then(resp => {
                     loadingIscrizione.style.display = "none";
@@ -678,40 +614,26 @@
                 .catch(error => {
                     console.error('Errore:', error);
                     loadingIscrizione.style.display = "none";
-                    btnIscrivetti.disabled = false;
+                    btnIscriviti.disabled = false;
                     isSending = false;
                     showError(`Errore di connessione: ${error.message}`);
                 });
         });
 
-        // Chiudi scheda
-        btnChiudiScheda.addEventListener("click", () => {
-            window.close();
-        });
+        btnChiudiScheda.addEventListener("click", () => { window.close(); });
+        btnChiudiSchedaUni.addEventListener("click", () => { window.close(); });
         
-        // Chiudi scheda per universitari
-        btnChiudiSchedaUni.addEventListener("click", () => {
-            window.close();
-        });
-        
-        // Gestione easter egg
         closeEasterEgg.addEventListener("click", hideEasterEgg);
         closeEasterEggBtn.addEventListener("click", hideEasterEgg);
         
-        // Rileva la sequenza di tasti per l'easter egg
         document.addEventListener('keydown', (e) => {
-            // Aggiungi il tasto premuto alla sequenza
             keySequence += e.key.toLowerCase();
-            
-            // Mantieni la sequenza della stessa lunghezza del codice segreto
             if (keySequence.length > secretCode.length) {
                 keySequence = keySequence.substring(1);
             }
-            
-            // Controlla se la sequenza corrisponde al codice segreto
             if (keySequence === secretCode) {
                 showEasterEgg();
-                keySequence = ""; // Resetta la sequenza
+                keySequence = "";
             }
         });
     </script>
