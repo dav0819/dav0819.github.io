@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>I miei voti</title>
+
+<!-- iOS / PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Voti">
+<meta name="theme-color" content="#0b0d12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23151822'/%3E%3Ctext x='50' y='68' font-size='54' text-anchor='middle'%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
+
+<style>
+:root{
+  --bg:#0b0d12;
+  --card:#151822;
+  --card-2:#1a1e2a;
+  --text:#e7eaf3;
+  --muted:#8a93a8;
+  --line:#232838;
+  --line-2:#2d3342;
+  --accent:#818cf8;
+  --accent-2:#a78bfa;
+  --good:#34d399;
+  --warn:#fbbf24;
+  --bad:#f87171;
+  --good-bg:rgba(16,185,129,.14);
+  --warn-bg:rgba(245,158,11,.14);
+  --bad-bg:rgba(239,68,68,.14);
+  --muted-bg:rgba(148,163,184,.14);
+  --accent-bg:rgba(129,140,248,.14);
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 14px 34px -18px rgba(0,0,0,.75);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(99,102,241,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(168,85,247,.08), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* ---------- header ---------- */
+header{
+  background:linear-gradient(135deg,#141726 0%,#1e1b4b 55%,#312e81 100%);
+  border-bottom:1px solid var(--line);
+  color:#fff;
+  padding:calc(26px + env(safe-area-inset-top)) 0 76px;
+  position:relative;
+}
+header::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(129,140,248,.5),transparent);
+}
+.head-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{font-size:22px;margin:0;font-weight:800;letter-spacing:-.02em}
+.tagline{font-size:13.5px;color:#c7cdf2;margin-top:4px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.tb{
+  background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); color:#e8ebff;
+  padding:8px 14px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;
+  transition:background .15s,border-color .15s; font-family:inherit;
+}
+.tb:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.26)}
+.tb.danger:hover{background:rgba(239,68,68,.85); border-color:transparent; color:#fff}
+
+/* ---------- main ---------- */
+main{margin-top:-56px; padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+
+.summary{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;padding:22px}
+@media(max-width:840px){.summary{grid-template-columns:1fr}}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat{background:var(--card-2);border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.stat .v{font-size:19px;font-weight:800;margin-top:3px;letter-spacing:-.02em;color:var(--text)}
+.stat.main{
+  grid-column:1 / -1;
+  background:linear-gradient(135deg,rgba(99,102,241,.14),rgba(168,85,247,.10));
+  border-color:rgba(129,140,248,.30);
+}
+.stat.main .v{
+  font-size:40px;line-height:1.05;
+  background:linear-gradient(135deg,#a5b4fc,#c4b5fd);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.stat.main .v.good{background:linear-gradient(135deg,#34d399,#6ee7b7)}
+.stat.main .v.warn{background:linear-gradient(135deg,#fbbf24,#fcd34d)}
+.stat.main .v.bad{background:linear-gradient(135deg,#f87171,#fca5a5)}
+.stat.main .v.muted{background:linear-gradient(135deg,#94a3b8,#cbd5e1)}
+.stat.main .exact{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;letter-spacing:.02em}
+
+.chart-side{display:flex;flex-direction:column}
+.chart-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.trend{width:100%;height:auto;display:block}
+.chart-empty{
+  flex:1;display:flex;align-items:center;justify-content:center;text-align:center;
+  color:var(--muted);font-size:13px;border:1px dashed var(--line-2);border-radius:13px;min-height:150px;padding:16px;
+}
+
+.settings{
+  grid-column:1/-1;display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+  border-top:1px solid var(--line);padding-top:14px;font-size:13.5px;color:var(--muted);
+}
+.settings label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.settings input[type=number]{
+  width:58px;padding:5px 8px;border:1px solid var(--line-2);border-radius:9px;
+  font-weight:700;color:var(--text);font-size:13.5px;text-align:center;font-family:inherit;
+  background:#0f1218;outline:none;
+}
+.settings input[type=number]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(129,140,248,.18)}
+.settings input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;cursor:pointer}
+.legend{font-size:11.5px;color:#5a6478;letter-spacing:.02em;margin-left:auto}
+.legend b{color:#a4adc2;font-weight:800}
+
+/* ---------- subjects ---------- */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:26px 0 14px;gap:12px;flex-wrap:wrap}
+.section-head h2{font-size:16px;margin:0;font-weight:800;letter-spacing:-.01em;color:var(--text)}
+.add-subject{display:flex;gap:8px;width:100%}
+@media(min-width:640px){.add-subject{width:auto}}
+.add-subject input{
+  padding:9px 14px;border:1px solid var(--line-2);border-radius:11px;font-size:14px;
+  font-family:inherit;color:var(--text);background:#0f1218;min-width:0;flex:1;outline:none;
+}
+@media(min-width:640px){.add-subject input{min-width:210px;flex:0 1 auto}}
+.add-subject input::placeholder{color:#5a6478}
+.add-subject input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(129,140,248,.18)}
+
+#subjects{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+@media(max-width:400px){#subjects{grid-template-columns:1fr}}
+
+.subject{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;
+}
+.subject-head{display:flex;align-items:center;gap:10px}
+.subject-name{font-weight:800;font-size:15.5px;flex:1;letter-spacing:-.01em;word-break:break-word;color:var(--text)}
+.avg-badge{
+  font-size:16px;font-weight:800;padding:4px 12px;border-radius:999px;font-variant-numeric:tabular-nums;
+}
+.avg-badge.good{background:var(--good-bg);color:var(--good)}
+.avg-badge.warn{background:var(--warn-bg);color:var(--warn)}
+.avg-badge.bad{background:var(--bad-bg);color:var(--bad)}
+.avg-badge.muted{background:var(--muted-bg);color:#94a3b8}
+.icon-btn{
+  background:transparent;border:none;color:#5a6478;cursor:pointer;font-size:16px;
+  padding:4px 6px;border-radius:8px;line-height:1;transition:.15s;
+}
+.icon-btn:hover{background:rgba(239,68,68,.16);color:var(--bad)}
+
+.spark{height:44px}
+.spark svg{width:100%;height:100%;display:block}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  border:none;border-radius:999px;padding:6px 13px;font-weight:800;font-size:14px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:5px;font-family:inherit;
+  font-variant-numeric:tabular-nums;transition:transform .12s;
+}
+.chip:hover{transform:scale(1.06)}
+.chip.good{background:var(--good-bg);color:var(--good)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.muted{background:var(--muted-bg);color:#94a3b8}
+.chip .w{font-size:10.5px;opacity:.8;font-weight:700}
+.chip.add{background:var(--accent-bg);color:#a5b4fc;border:1.5px dashed rgba(129,140,248,.45);font-weight:700}
+.chip.add:hover{background:rgba(129,140,248,.22);color:#c7d2fe}
+
+.planner{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);
+  border-top:1px dashed var(--line-2);padding-top:11px;margin-top:auto;
+}
+.planner input{
+  width:50px;padding:4px 6px;border:1px solid var(--line-2);border-radius:8px;text-align:center;
+  font-weight:800;color:var(--text);font-size:13px;font-family:inherit;outline:none;
+  background:#0f1218;
+}
+.planner input:focus{border-color:var(--accent)}
+.planner-out{font-weight:800;font-size:15px;margin-left:auto;font-variant-numeric:tabular-nums}
+.planner-out.good{color:var(--good)}
+.planner-out.warn{color:var(--warn)}
+.planner-out.bad{color:var(--bad)}
+.planner-out.muted{color:#94a3b8}
+
+.empty-state{
+  grid-column:1/-1;text-align:center;padding:48px 24px;border:2px dashed var(--line-2);
+  border-radius:16px;color:var(--muted);
+}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-state h3{margin:0 0 6px;color:var(--text);font-size:16px}
+.empty-state p{margin:0;font-size:13.5px}
+
+footer{text-align:center;font-size:12px;color:#5a6478;padding:0 20px calc(40px + env(safe-area-inset-bottom))}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.modal.hidden{display:none}
+.modal-card{
+  background:var(--card);border:1px solid var(--line-2);border-radius:20px;padding:24px;width:100%;max-width:430px;
+  box-shadow:0 24px 70px rgba(0,0,0,.75);animation:pop .18s ease-out;
+  max-height:90vh;overflow:auto;
+}
+@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-card h3{margin:0 0 18px;font-size:17px;font-weight:800;letter-spacing:-.01em;color:var(--text)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.field input{
+  width:100%;padding:10px 12px;border:1px solid var(--line-2);border-radius:11px;
+  font-size:15px;font-family:inherit;color:var(--text);outline:none;background:#0f1218;
+}
+.field input::placeholder{color:#5a6478}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(129,140,248,.18);background:#0f1218}
+.quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.quick button{
+  flex:1 0 auto;min-width:38px;padding:8px 0;border-radius:10px;border:1px solid var(--line-2);
+  background:#0f1218;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;color:var(--text);transition:.12s;
+}
+.quick button:hover{background:rgba(129,140,248,.16);border-color:rgba(129,140,248,.45);color:#c7d2fe}
+.quick button.sel{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-color:transparent}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;padding:11px;border-radius:11px;border:none;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;transition:.15s}
+.btn.primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn.ghost{background:#1e2331;color:#a4adc2}
+.btn.ghost:hover{background:#262b3d;color:#e7eaf3}
+
+/* ---------- MOBILE (iPhone) ---------- */
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+  h1{font-size:20px}
+  .summary{padding:18px;gap:18px}
+  .stat.main .v{font-size:36px}
+
+  /* touch target più grandi */
+  .tb{padding:10px 16px;font-size:13.5px}
+  .chip{padding:8px 15px;font-size:14.5px}
+  .quick button{padding:12px 0;font-size:15px;min-width:44px}
+  .btn{padding:14px;font-size:15px}
+  .icon-btn{padding:8px 10px;font-size:18px}
+
+  /* iOS: input con font-size ≥16px per evitare lo zoom automatico */
+  .add-subject input,
+  .field input,
+  .planner input,
+  .settings input[type=number]{ font-size:16px; }
+  .planner input{ width:56px; }
+
+  /* modal quasi a schermo intero */
+  .modal{padding:0; align-items:flex-end}
+  .modal-card{
+    border-radius:22px 22px 0 0;
+    max-width:100%;
+    padding-bottom:calc(24px + env(safe-area-inset-bottom));
+    animation:slideUp .22s ease-out;
+  }
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+  /* niente hover effects sul touch */
+  .chip:hover{transform:none}
+  .tb:hover{background:rgba(255,255,255,.08)}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-row">
+    <div>
+      <h1>📊 I miei voti</h1>
+      <div class="tagline">Medie, andamento e voto necessario per la sufficienza · <span id="syncStat">…</span></div>
+    </div>
+    <div class="toolbar">
+      <button class="tb" id="btnExport">↓ Esporta</button>
+      <button class="tb" id="btnSync" type="button">☁ Sync</button>
+      <button class="tb" id="btnImport" type="button">↑ Importa</button>
+      <input type="file" id="fileImport" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1">
+      <button class="tb danger" id="btnReset">Reset</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card summary" id="summary"></section>
+
+  <div class="section-head">
+    <h2>Materie</h2>
+    <div class="add-subject">
+      <input type="text" id="newSubject" placeholder="Nome materia (es. Matematica)" autocomplete="off">
+      <button class="btn primary" id="btnAddSubject" style="flex:0 0 auto;padding:9px 18px">+ Aggiungi</button>
+    </div>
+  </div>
+
+  <section id="subjects"></section>
+</main>
+
+<footer>I dati sono salvati nel browser e, se attivi ☁ Sync, anche online, con un codice da incollare sugli altri dispositivi. Nessun collegamento a ClasseViva.</footer>
+
+<!-- MODAL -->
+<div class="modal hidden" id="modal">
+  <div class="modal-card">
+    <h3 id="modalTitle">Aggiungi voto</h3>
+
+    <div class="field">
+      <label>Voto</label>
+      <div class="quick" id="quickRow"></div>
+      <input type="number" id="gValue" step="0.25" min="1" max="10" placeholder="es. 7,5" inputmode="decimal">
+    </div>
+
+    <div class="field">
+      <label>Tipo / nota (facoltativo)</label>
+      <input type="text" id="gNote" placeholder="es. Verifica di algebra" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>Data</label>
+      <input type="date" id="gDate">
+    </div>
+
+    <div class="field">
+      <label>Peso (1 = normale)</label>
+      <input type="number" id="gWeight" value="1" min="0.5" step="0.5" inputmode="decimal">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" id="mCancel">Annulla</button>
+      <button class="btn primary" id="mSave">Salva voto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= UTILS ================= */
+const KEY = 'voti-scuola-v2';
+const $ = (s, r = document) => r.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 9);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = (n, d = 2) => (n === null || n === undefined || Number.isNaN(n)) ? '—' : n.toFixed(d).replace('.', ',');
+const fmtG = n => (n === null || n === undefined) ? '—' : (Number.isInteger(n) ? String(n) : String(parseFloat(n.toFixed(2))).replace('.', ','));
+const todayStr = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; };
+
+/* formato voti all'italiana: 5.75→6-, 6.25→6+, 6.5→6½ */
+function gradeDisplay(v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return '—';
+  const x = Math.max(1, Math.min(10, v));
+  const rounded = Math.round(x * 4) / 4;
+  const whole = Math.floor(rounded);
+  const fracQ = Math.round((rounded - whole) * 4);
+  if (fracQ === 0) return String(whole);
+  if (fracQ === 1) return whole + '+';
+  if (fracQ === 2) return whole + '½';
+  if (fracQ === 3) return (whole + 1) + '-';
+  return String(rounded);
+}
+
+/* ================= STATE ================= */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return { subjects: [], sufficiency: 6, weighted: false, planner: {}, updatedAt: 0 };
+    const s = JSON.parse(raw);
+    return {
+      subjects: Array.isArray(s.subjects) ? s.subjects : [],
+      sufficiency: typeof s.sufficiency === 'number' ? s.sufficiency : 6,
+      weighted: !!s.weighted,
+      planner: s.planner || {},
+      updatedAt: Number(s.updatedAt) || 0
+    };
+  } catch (e) {
+    return { subjects: [], sufficiency: 6, weighted: false, planner: {} };
+  }
+}
+let state = loadState();
+const CFG = 'voti-sync-code';
+const API = 'https://jsonblob.com/api/jsonBlob';
+const HDR = { 'Content-Type': 'application/json', Accept: 'application/json' };
+let syncCfg = null;
+try { syncCfg = JSON.parse(localStorage.getItem(CFG) || 'null'); } catch (e) {}
+let applyingRemote = false, pushTimer = null, pollTimer = null, busy = false;
+const setSync = t => { const el = $('#syncStat'); if (el) el.textContent = t; };
+const saveCfg = () => { try { localStorage.setItem(CFG, JSON.stringify(syncCfg)); } catch (e) {} };
+const payload = () => JSON.stringify({ json: JSON.stringify(state), updatedAt: state.updatedAt || 0 });
+
+async function createBlob() {
+  const r = await fetch(API, { method: 'POST', headers: HDR, body: payload() });
+  if (!r.ok) throw new Error(r.status);
+  const loc = r.headers.get('Location');
+  if (!loc) throw new Error('no-location');
+  return loc.split('/').pop();
+}
+
+const saveState = () => {
+  if (!applyingRemote) state.updatedAt = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  if (!applyingRemote) pushCloud();
+};
+function pushCloud() {
+  if (!syncCfg) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(API + '/' + syncCfg.id, { method: 'PUT', headers: HDR, body: payload() });
+      if (!r.ok) throw new Error(r.status);
+      setSync('☁️ sincronizzato');
+    } catch (e) { setSync('⚠️ sync non riuscita'); }
+  }, 800);
+}
+async function pullCloud() {
+  if (!syncCfg || busy) return;
+  busy = true;
+  try {
+    const r = await fetch(API + '/' + syncCfg.id, { headers: HDR, cache: 'no-store' });
+    if (r.status === 404) { setSync('⚠️ codice non valido o scaduto'); return; }
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const mine = state.updatedAt || 0;
+    if (d && d.updatedAt > mine) {
+      const x = JSON.parse(d.json);
+      try {
+        applyingRemote = true;
+        state = {
+          subjects: Array.isArray(x.subjects) ? x.subjects : [],
+          sufficiency: typeof x.sufficiency === 'number' ? x.sufficiency : 6,
+          weighted: !!x.weighted,
+          planner: x.planner || {},
+          updatedAt: d.updatedAt
+        };
+        render();
+      } finally { applyingRemote = false; }
+    } else if (!d || (d.updatedAt || 0) < mine) {
+      pushCloud();
+    }
+    setSync('☁️ sincronizzato');
+  } catch (e) { setSync('⚠️ sync non riuscita'); }
+  finally { busy = false; }
+}
+function initCloud() {
+  clearInterval(pollTimer);
+  if (!syncCfg) return setSync('sync non attiva');
+  pullCloud();
+  pollTimer = setInterval(pullCloud, 30000);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pullCloud(); });
+
+$('#btnSync').addEventListener('click', async () => {
+  if (syncCfg) {
+    const v = prompt('Codice di sincronizzazione di questo dispositivo (copialo e incollalo sugli altri).\nScrivi "scollega" per disattivare la sync.', syncCfg.id);
+    if (v === null) return;
+    const t = v.trim();
+    if (t.toLowerCase() === 'scollega') {
+      syncCfg = null;
+      try { localStorage.removeItem(CFG); } catch (e) {}
+      return initCloud();
+    }
+    if (t && t !== syncCfg.id) { syncCfg = { id: t }; saveCfg(); initCloud(); }
+    return;
+  }
+  const v = prompt('Hai già un codice da un altro dispositivo? Incollalo qui.\nSe è il primo dispositivo, lascia vuoto e premi OK: ne creo uno nuovo.');
+  if (v === null) return;
+  let id = v.trim();
+  try {
+    setSync('…');
+    if (!id) {
+      id = await createBlob();
+      prompt('Ecco il tuo codice: copialo e incollalo sugli altri dispositivi (☁ Sync).', id);
+    }
+    syncCfg = { id };
+    saveCfg();
+    initCloud();
+  } catch (e) { setSync('⚠️ impossibile creare il codice'); }
+});
+
+/* ================= CALC ================= */
+function avgOf(grades) {
+  if (!grades || !grades.length) return null;
+  if (state.weighted) {
+    let ws = 0, s = 0;
+    grades.forEach(g => { const w = g.weight || 1; ws += w; s += g.value * w; });
+    return ws ? s / ws : null;
+  }
+  return grades.reduce((a, g) => a + g.value, 0) / grades.length;
+}
+const allGrades = () =>
+  state.subjects
+    .flatMap(s => s.grades.map(g => ({ ...g, subjectId: s.id, subjectName: s.name })))
+    .sort((a, b) => a.ts - b.ts);
+
+function cumulativeMeans(grades) {
+  const out = []; let s = 0, w = 0;
+  grades.forEach(g => {
+    const ww = state.weighted ? (g.weight || 1) : 1;
+    s += g.value * ww; w += ww;
+    out.push(s / w);
+  });
+  return out;
+}
+const colorClass = v => v === null ? 'muted' : (v >= state.sufficiency ? 'good' : (v >= state.sufficiency - 0.5 ? 'warn' : 'bad'));
+
+function plannerResult(sub, missing) {
+  const target = state.sufficiency;
+  if (missing <= 0) return { txt: '—', cls: 'muted', exact: null };
+  const grades = sub.grades;
+  if (!grades.length) return { txt: gradeDisplay(target), cls: 'good', exact: target };
+  const n = grades.length;
+  const simple = grades.reduce((a, g) => a + g.value, 0) / n;
+  const need = (target * (n + missing) - simple * n) / missing;
+  if (need > 10) return { txt: 'impossibile', cls: 'bad', exact: need };
+  if (need <= 1) return { txt: '≤ 1', cls: 'good', exact: need };
+  const cls = need <= target ? 'good' : (need <= 8 ? 'warn' : 'bad');
+  return { txt: gradeDisplay(need), cls, exact: need };
+}
+
+/* ================= SVG ================= */
+function sparkline(grades) {
+  if (grades.length < 2) return '';
+  const W = 240, H = 56, P = 6;
+  const vals = grades.map(g => g.value);
+  const suff = state.sufficiency;
+  let lo = Math.min(...vals, suff) - 0.6;
+  let hi = Math.max(...vals, suff) + 0.6;
+  lo = Math.max(1, lo); hi = Math.min(10, hi);
+  if (hi - lo < 1) hi = lo + 1;
+  const X = i => P + i * (W - 2 * P) / (vals.length - 1);
+  const Y = v => H - P - ((v - lo) / (hi - lo)) * (H - 2 * P);
+  const pts = vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const sy = Y(suff).toFixed(1);
+  const last = vals[vals.length - 1];
+  const lc = last >= suff ? '#34d399' : '#f87171';
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+    <line x1="${P}" y1="${sy}" x2="${W-P}" y2="${sy}" stroke="#2d3342" stroke-dasharray="4 4" stroke-width="1.2"/>
+    <polyline points="${pts}" fill="none" stroke="#a78bfa" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${X(vals.length-1).toFixed(1)}" cy="${Y(last).toFixed(1)}" r="3.6" fill="${lc}" stroke="#151822" stroke-width="1.8"/>
+  </svg>`;
+}
+
+function trendSVG() {
+  const grades = allGrades();
+  if (grades.length < 2) {
+    return `<div class="chart-empty">Aggiungi almeno 2 voti<br>per vedere l'andamento</div>`;
+  }
+  const W = 560, H = 170, P = 20;
+  const means = cumulativeMeans(grades);
+  const suff = state.sufficiency;
+  let lo = Math.min(...means, suff) - 0.5;
+  let hi = Math.max(...means, suff) + 0.5;
+  lo = Math.max(1, lo); hi = Math.min(10, hi);
+  if (hi - lo < 1.2) hi = lo + 1.2;
+  const X = i => P + i * (W - 2 * P) / (means.length - 1);
+  const Y = v => H - P - ((v - lo) / (hi - lo)) * (H - 2 * P);
+  const pts = means.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+  const sy = Y(suff).toFixed(1);
+  const last = means[means.length - 1];
+  const lc = last >= suff ? '#34d399' : '#f87171';
+  return `<svg viewBox="0 0 ${W} ${H}" class="trend" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#818cf8" stop-opacity=".38"/>
+        <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <line x1="${P}" y1="${sy}" x2="${W-P}" y2="${sy}" stroke="#2d3342" stroke-dasharray="5 5" stroke-width="1.4"/>
+    <polygon points="${P},${H-P} ${pts} ${X(means.length-1).toFixed(1)},${H-P}" fill="url(#ag)"/>
+    <polyline points="${pts}" fill="none" stroke="#818cf8" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${X(means.length-1).toFixed(1)}" cy="${Y(last).toFixed(1)}" r="5" fill="${lc}" stroke="#151822" stroke-width="2.2"/>
+  </svg>`;
+}
+
+/* ================= RENDER ================= */
+function renderSummary() {
+  const grades = allGrades();
+  const overall = avgOf(grades);
+  const withGrades = state.subjects.filter(s => s.grades.length);
+
+  let best = null, worst = null;
+  withGrades.forEach(s => {
+    const a = avgOf(s.grades);
+    if (!best || a > best.a) best = { name: s.name, a };
+    if (!worst || a < worst.a) worst = { name: s.name, a };
+  });
+
+  $('#summary').innerHTML = `
+    <div class="stats">
+      <div class="stat main">
+        <div class="k">Media generale${state.weighted ? ' (ponderata)' : ''}</div>
+        <div class="v ${colorClass(overall)}">${overall === null ? '—' : gradeDisplay(overall)}</div>
+        ${overall !== null && !Number.isInteger(overall) ? `<div class="exact">esatto: ${fmtG(overall)}</div>` : ''}
+      </div>
+      <div class="stat"><div class="k">Voti totali</div><div class="v">${grades.length}</div></div>
+      <div class="stat"><div class="k">Materie</div><div class="v">${state.subjects.length}</div></div>
+      <div class="stat">
+        <div class="k">Migliore</div>
+        <div class="v" style="font-size:14px" ${best ? `title="Media esatta: ${fmtG(best.a)}"` : ''}>${best ? esc(best.name) + ' · ' + gradeDisplay(best.a) : '—'}</div>
+      </div>
+      <div class="stat">
+        <div class="k">Da recuperare</div>
+        <div class="v" style="font-size:14px" ${worst ? `title="Media esatta: ${fmtG(worst.a)}"` : ''}>${worst ? esc(worst.name) + ' · ' + gradeDisplay(worst.a) : '—'}</div>
+      </div>
+    </div>
+    <div class="chart-side">
+      <div class="chart-title">Andamento media generale</div>
+      ${trendSVG()}
+    </div>
+    <div class="settings">
+      <label>Sufficienza:
+        <input type="number" id="suffInput" min="1" max="10" step="0.5" value="${state.sufficiency}" inputmode="decimal">
+      </label>
+      <label>
+        <input type="checkbox" id="weightedChk" ${state.weighted ? 'checked' : ''}>
+        Usa media ponderata (per peso)
+      </label>
+      <span class="legend">5,75→<b>6-</b> · 6,25→<b>6+</b> · 6,5→<b>6½</b></span>
+    </div>
+  `;
+}
+
+function subjectCard(sub) {
+  const grades = [...sub.grades].sort((a, b) => a.ts - b.ts);
+  const avg = avgOf(grades);
+  const cls = colorClass(avg);
+  const missing = state.planner[sub.id] ?? 2;
+  const res = plannerResult(sub, missing);
+
+  const chips = grades.map(g => `
+    <button class="chip ${colorClass(g.value)}"
+            data-action="del-grade" data-subject="${sub.id}" data-grade="${g.id}"
+            title="${esc(gradeDisplay(g.value) + ' (' + fmtG(g.value) + ')' + (g.note ? ' · ' + g.note : ''))} — clicca per eliminare">
+      ${gradeDisplay(g.value)}${(g.weight && g.weight !== 1) ? `<span class="w">×${fmtG(g.weight)}</span>` : ''}
+    </button>`).join('');
+
+  return `
+  <div class="subject">
+    <div class="subject-head">
+      <div class="subject-name">${esc(sub.name)}</div>
+      <div class="avg-badge ${cls}" ${avg !== null ? `title="Media esatta: ${fmtG(avg)}"` : ''}>${avg === null ? '—' : gradeDisplay(avg)}</div>
+      <button class="icon-btn" data-action="del-subject" data-subject="${sub.id}" title="Elimina materia">✕</button>
+    </div>
+
+    <div class="spark">${sparkline(grades)}</div>
+
+    <div class="chips">
+      ${chips}
+      <button class="chip add" data-action="add-grade" data-subject="${sub.id}">+ voto</button>
+    </div>
+
+    <div class="planner" title="Calcolo basato sulla media semplice dei voti attuali">
+      <span>Sufficienza con</span>
+      <input type="number" min="0" max="20" value="${missing}" data-planner="${sub.id}" inputmode="numeric">
+      <span>voti mancanti →</span>
+      <span class="planner-out ${res.cls}" data-out="${sub.id}"${res.exact !== null ? ` title="Voto esatto: ${fmtG(res.exact)}"` : ''}>${res.txt}</span>
+    </div>
+  </div>`;
+}
+
+function renderSubjects() {
+  const el = $('#subjects');
+  if (!state.subjects.length) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h3>Nessuna materia ancora</h3>
+        <p>Aggiungi la tua prima materia qui sopra e inizia a inserire i voti.</p>
+      </div>`;
+    return;
+  }
+  el.innerHTML = state.subjects.map(subjectCard).join('');
+}
+
+function updatePlannerOut(subId) {
+  const sub = state.subjects.find(s => s.id === subId);
+  const out = document.querySelector('[data-out="' + subId + '"]');
+  if (!sub || !out) return;
+  const missing = state.planner[subId] ?? 0;
+  const res = plannerResult(sub, missing);
+  out.textContent = res.txt;
+  out.className = 'planner-out ' + res.cls;
+  if (res.exact !== null) out.title = 'Voto esatto: ' + fmtG(res.exact);
+  else out.removeAttribute('title');
+}
+
+function render() {
+  renderSummary();
+  renderSubjects();
+  saveState();
+}
+
+/* ================= ACTIONS ================= */
+function addSubject(name) {
+  name = name.trim();
+  if (!name) return;
+  state.subjects.push({ id: uid(), name, grades: [] });
+  render();
+}
+
+function deleteSubject(id) {
+  const sub = state.subjects.find(s => s.id === id);
+  if (!sub) return;
+  if (!confirm(`Eliminare la materia "${sub.name}" e tutti i suoi voti?`)) return;
+  state.subjects = state.subjects.filter(s => s.id !== id);
+  delete state.planner[id];
+  render();
+}
+
+function deleteGrade(subjectId, gradeId) {
+  const sub = state.subjects.find(s => s.id === subjectId);
+  if (!sub) return;
+  const g = sub.grades.find(x => x.id === gradeId);
+  if (!g) return;
+  if (!confirm(`Eliminare il voto ${gradeDisplay(g.value)} (${fmtG(g.value)}) in ${sub.name}?`)) return;
+  sub.grades = sub.grades.filter(x => x.id !== gradeId);
+  render();
+}
+
+/* ================= MODAL ================= */
+let modalCtx = { subjectId: null };
+
+function openModal(subjectId) {
+  const sub = state.subjects.find(s => s.id === subjectId);
+  if (!sub) return;
+  modalCtx.subjectId = subjectId;
+  $('#modalTitle').textContent = 'Aggiungi voto · ' + sub.name;
+  $('#gValue').value = '';
+  $('#gNote').value = '';
+  $('#gWeight').value = 1;
+  $('#gDate').value = todayStr();
+  document.querySelectorAll('#quickRow button').forEach(b => b.classList.remove('sel'));
+  $('#modal').classList.remove('hidden');
+  setTimeout(() => $('#gValue').focus(), 50);
+}
+
+function closeModal() {
+  $('#modal').classList.add('hidden');
+  modalCtx.subjectId = null;
+}
+
+function saveGrade() {
+  const sub = state.subjects.find(s => s.id === modalCtx.subjectId);
+  if (!sub) return;
+  const raw = $('#gValue').value.replace(',', '.');
+  const value = parseFloat(raw);
+  if (Number.isNaN(value) || value < 1 || value > 10) {
+    alert('Inserisci un voto valido tra 1 e 10.');
+    $('#gValue').focus();
+    return;
+  }
+  let weight = parseFloat($('#gWeight').value);
+  if (Number.isNaN(weight) || weight <= 0) weight = 1;
+
+  const dateStr = $('#gDate').value || todayStr();
+  const d = new Date(dateStr + 'T12:00:00');
+  const ts = Number.isNaN(d.getTime()) ? Date.now() : d.getTime();
+
+  sub.grades.push({
+    id: uid(),
+    value,
+    weight,
+    note: $('#gNote').value.trim(),
+    date: dateStr,
+    ts
+  });
+
+  closeModal();
+  render();
+}
+
+/* ================= EVENTS ================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (el) {
+    const a = el.dataset.action;
+    if (a === 'del-subject') return deleteSubject(el.dataset.subject);
+    if (a === 'add-grade') return openModal(el.dataset.subject);
+    if (a === 'del-grade') return deleteGrade(el.dataset.subject, el.dataset.grade);
+  }
+  if (e.target.classList.contains('modal')) closeModal();
+});
+
+document.addEventListener('input', e => {
+  if (e.target.matches('[data-planner]')) {
+    const id = e.target.dataset.planner;
+    const v = Math.max(0, Math.min(20, parseInt(e.target.value, 10) || 0));
+    state.planner[id] = v;
+    saveState();
+    updatePlannerOut(id);
+  }
+  if (e.target.id === 'gValue') {
+    const v = parseFloat(e.target.value.replace(',', '.'));
+    document.querySelectorAll('#quickRow button').forEach(b => {
+      b.classList.toggle('sel', parseFloat(b.dataset.v) === v);
+    });
+  }
+});
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'suffInput') {
+    let v = parseFloat(e.target.value);
+    if (Number.isNaN(v) || v < 1) v = 6;
+    if (v > 10) v = 10;
+    state.sufficiency = v;
+    render();
+  }
+  if (e.target.id === 'weightedChk') {
+    state.weighted = e.target.checked;
+    render();
+  }
+});
+
+$('#btnAddSubject').addEventListener('click', () => {
+  const inp = $('#newSubject');
+  addSubject(inp.value);
+  inp.value = '';
+  inp.focus();
+});
+$('#newSubject').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    addSubject(e.target.value);
+    e.target.value = '';
+  }
+});
+
+$('#mCancel').addEventListener('click', closeModal);
+$('#mSave').addEventListener('click', saveGrade);
+$('#gValue').addEventListener('keydown', e => { if (e.key === 'Enter') saveGrade(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* quick buttons: etichette nel formato italiano, valore decimale sotto */
+(function buildQuick() {
+  const vals = [5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 8, 9, 10];
+  $('#quickRow').innerHTML = vals.map(v =>
+    `<button type="button" data-v="${v}" title="Inserisci ${fmtG(v)}">${gradeDisplay(v)}</button>`).join('');
+  $('#quickRow').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    $('#gValue').value = b.dataset.v;
+    document.querySelectorAll('#quickRow button').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+  });
+})();
+
+/* export / import / reset */
+$('#btnExport').addEventListener('click', async () => {
+  const filename = 'voti-scuola-' + todayStr() + '.json';
+  const text = JSON.stringify(state, null, 2);
+  try {
+    const dl = typeof claude !== 'undefined' ? await claude.use('downloads') : null;
+    if (dl) { await dl.save({ filename, data: text }); return; }
+  } catch (e) { return; }
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+});
+$('#btnImport').addEventListener('click', () => $('#fileImport').click());
+
+$('#fileImport').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!Array.isArray(data.subjects)) throw new Error('formato non valido');
+      state = {
+        subjects: data.subjects.map(s => ({
+          id: s.id || uid(),
+          name: String(s.name || 'Materia'),
+          grades: (s.grades || []).map(g => ({
+            id: g.id || uid(),
+            value: Number(g.value) || 0,
+            weight: Number(g.weight) || 1,
+            note: String(g.note || ''),
+            date: g.date || todayStr(),
+            ts: Number(g.ts) || Date.now()
+          }))
+        })),
+        sufficiency: typeof data.sufficiency === 'number' ? data.sufficiency : 6,
+        weighted: !!data.weighted,
+        planner: data.planner || {}
+      };
+      render();
+      alert('Importazione completata.');
+    } catch (err) {
+      alert('File non valido: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+$('#btnReset').addEventListener('click', () => {
+  if (!confirm('Cancellare TUTTI i dati (materie e voti)? L\'operazione è irreversibile.')) return;
+  state = { subjects: [], sufficiency: 6, weighted: false, planner: {}, updatedAt: 0 };
+  render();
+});
+
+/* ================= START ================= */
+applyingRemote = true; render(); applyingRemote = false;
+initCloud();
+</script>
+</body>
+</html>
