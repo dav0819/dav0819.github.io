@@ -969,9 +969,9 @@ const cleanState = (s, ts) => ({
   planner: s.planner || {},
   updatedAt: ts
 });
-function loadState() {
+function loadState(storageKey = KEY) {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(storageKey);
     if (!raw) return emptyState();
     const s = JSON.parse(raw);
     return cleanState(s, Number(s.updatedAt) || 0);
@@ -979,7 +979,16 @@ function loadState() {
     return emptyState();
   }
 }
-let state = loadState();
+
+// I dati locali degli utenti autenticati sono separati per UID.
+// KEY resta dedicata alla modalità ospite (utente non autenticato).
+const storageKeyForUser = uid => uid ? `${KEY}:user:${uid}` : `${KEY}:guest`;
+let activeUid = null;
+let activeStorageKey = `${KEY}:guest`;
+let authStateReady = false;
+// Attendi il primo controllo Firebase prima di mostrare dati locali: evita
+// che i dati ospite appaiano per un istante a chi è già autenticato.
+let state = emptyState();
 
 /* ================= SYNC (Firebase: accesso Google + Firestore) ================= */
 const FB_CFG = {
@@ -1003,7 +1012,7 @@ const errTxt = e => {
 
 const saveState = () => {
   if (!applyingRemote) state.updatedAt = Date.now();
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  try { localStorage.setItem(activeStorageKey, JSON.stringify(state)); } catch (e) {}
   if (!applyingRemote) pushCloud();
 };
 
@@ -1020,40 +1029,60 @@ async function loadFirebase() {
 }
 
 function pushCloud() {
-  if (!docRef) return;
+  if (!docRef || !activeUid) return;
   clearTimeout(pushTimer);
   pushTimer = setTimeout(flush, 800);
 }
+
 async function flush() {
-  if (!docRef) return;
+  if (!docRef || !activeUid) return;
   if (writing) { dirty = true; return; }
+
   writing = true;
+  const targetDoc = docRef;
+  const targetUid = activeUid;
+  const payload = { json: JSON.stringify(state), updatedAt: state.updatedAt || 0 };
+
   try {
-    await fb.fs.setDoc(docRef, { json: JSON.stringify(state), updatedAt: state.updatedAt || 0 });
-    setSync('☁️ sincronizzato');
+    await fb.fs.setDoc(targetDoc, payload);
+    if (activeUid === targetUid && docRef === targetDoc) setSync('☁️ sincronizzato');
   } catch (e) {
-    setSync('⚠️ invio non riuscito: ' + errTxt(e));
+    if (activeUid === targetUid && docRef === targetDoc) {
+      setSync('⚠️ invio non riuscito: ' + errTxt(e));
+    }
   } finally {
     writing = false;
-    if (dirty) { dirty = false; flush(); }
+    if (dirty) {
+      dirty = false;
+      flush();
+    }
   }
 }
 
-function onRemote(snap) {
+function onRemote(snap, expectedUid) {
+  // Ignora eventuali eventi arrivati in ritardo da un account precedente.
+  if (expectedUid && activeUid !== expectedUid) return;
   if (snap.metadata && snap.metadata.hasPendingWrites) return;
+
   const fromCache = !!(snap.metadata && snap.metadata.fromCache);
   const mine = state.updatedAt || 0;
   const d = snap.exists() ? snap.data() : null;
   const remoteTs = d ? (Number(d.updatedAt) || 0) : 0;
 
-  if (d && typeof d.json === 'string' && remoteTs > mine) {
+  if (d && typeof d.json === 'string' && remoteTs >= mine) {
     try {
       const x = JSON.parse(d.json);
       applyingRemote = true;
-      try { state = cleanState(x, remoteTs); render(); }
-      finally { applyingRemote = false; }
+      try {
+        state = cleanState(x, remoteTs);
+        render();
+      } finally {
+        applyingRemote = false;
+      }
       setSync('☁️ sincronizzato');
-    } catch (e) { setSync('⚠️ dati online non validi'); }
+    } catch (e) {
+      setSync('⚠️ dati online non validi');
+    }
   } else if (!fromCache && mine > remoteTs) {
     flush();
   } else if (!fromCache) {
@@ -1062,15 +1091,49 @@ function onRemote(snap) {
 }
 
 function onUser(user) {
+  const nextUid = user ? user.uid : null;
+  const changedAccount = !authStateReady || nextUid !== activeUid;
+
   if (unsub) { unsub(); unsub = null; }
+  clearTimeout(pushTimer);
+  pushTimer = null;
+  dirty = false;
   docRef = null;
+
+  if (changedAccount) {
+    activeUid = nextUid;
+    activeStorageKey = storageKeyForUser(activeUid);
+    state = loadState(activeStorageKey);
+    authStateReady = true;
+
+    // Ridisegna senza inviare lo stato precedente al nuovo account.
+    applyingRemote = true;
+    try { render(); }
+    finally { applyingRemote = false; }
+  }
+
   $('#btnSync').hidden = !!user;
   $('#btnLogout').hidden = !user;
   $('#btnDeleteAcc').hidden = !user;
-  if (!user) return setSync('accedi con Google per sincronizzare');
-  docRef = fb.fs.doc(fb.db, 'users', user.uid);
+
+  if (!user) {
+    setSync('accedi con Google per sincronizzare');
+    return;
+  }
+
+  const userUid = user.uid;
+  const userDoc = fb.fs.doc(fb.db, 'users', userUid);
+  docRef = userDoc;
   setSync('…');
-  unsub = fb.fs.onSnapshot(docRef, onRemote, e => setSync('⚠️ lettura non riuscita: ' + errTxt(e)));
+  unsub = fb.fs.onSnapshot(
+    userDoc,
+    snap => onRemote(snap, userUid),
+    e => {
+      if (activeUid === userUid && docRef === userDoc) {
+        setSync('⚠️ lettura non riuscita: ' + errTxt(e));
+      }
+    }
+  );
 }
 
 async function initCloud() {
